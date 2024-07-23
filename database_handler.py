@@ -75,6 +75,12 @@ class DatabaseHandler:
         query = "UPDATE Rentas SET FinalRenta=%s WHERE ID=%s"
         return self.execute_query(query, (final_renta, id_renta))
 
+    def add_carro(self, marca, modelo, placa, estado):
+        query = (
+            "INSERT INTO Carros (Marca, Modelo, Placa, Estado) VALUES (%s, %s, %s, %s)"
+        )
+        return self.execute_query(query, (marca, modelo, placa, estado))
+
     def update_carro(self, id_carro, marca, modelo, placa, estado):
         query = "UPDATE Carros SET Marca=%s, Modelo=%s, Placa=%s, Estado=%s WHERE ID=%s"
         return self.execute_query(query, (marca, modelo, placa, estado, id_carro))
