@@ -58,11 +58,10 @@ class DatabaseHandler:
 
     def fetch_rentas(self):
         query = """
-        SELECT Rentas.ID, Usuarios.Username, Carros.Marca, Carros.Modelo, Rentas.ComienzoRenta, Rentas.FinalRenta, Rentas.CostoTotal
+        SELECT Rentas.ID, Usuarios.Username, Carros.Marca, Carros.Modelo, Rentas.ComienzoRenta, Rentas.FinalRenta, Rentas.CostoTotal, Rentas.CreadoEn
         FROM Rentas
         JOIN Usuarios ON Rentas.id_usuario = Usuarios.ID
         JOIN Carros ON Rentas.id_carro = Carros.ID
-        WHERE Rentas.FinalRenta IS NULL
         """
         return self.fetch_all(query)
 
@@ -85,6 +84,10 @@ class DatabaseHandler:
         return self.execute_query(
             query, (username, password, email, nombre, apellido, id_usuario)
         )
+
+    def add_usuario(self, username, password, email, nombre, apellido):
+        query = "INSERT INTO Usuarios (Username, Password, Email, Nombre, Apellido) VALUES (%s, %s, %s, %s, %s)"
+        return self.execute_query(query, (username, password, email, nombre, apellido))
 
     def verify_user(self, username, password):
         query = "SELECT * FROM Usuarios WHERE Username=%s AND Password=%s"

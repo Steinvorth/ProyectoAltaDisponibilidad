@@ -1,3 +1,5 @@
+# gui_handler.py
+
 from PyQt5.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -12,7 +14,9 @@ from PyQt5.QtWidgets import (
     QTabWidget,
     QMessageBox,
     QHeaderView,
+    QDateTimeEdit,
 )
+from PyQt5.QtCore import QDateTime
 from database_handler import DatabaseHandler
 
 
@@ -100,9 +104,17 @@ class GUIHandler(QMainWindow):
         layout = QVBoxLayout(self.user_tab)
 
         self.user_table = QTableWidget()
-        self.user_table.setColumnCount(5)
+        self.user_table.setColumnCount(7)
         self.user_table.setHorizontalHeaderLabels(
-            ["ID", "Username", "Email", "Nombre", "Apellido"]
+            [
+                "ID",
+                "Username",
+                "Email",
+                "Nombre",
+                "Apellido",
+                "CreadoEn",
+                "ActualizadoEn",
+            ]
         )
         self.user_table.horizontalHeader().setStretchLastSection(True)
         self.user_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -148,9 +160,17 @@ class GUIHandler(QMainWindow):
         layout = QVBoxLayout(self.rent_tab)
 
         self.rent_table = QTableWidget()
-        self.rent_table.setColumnCount(6)
+        self.rent_table.setColumnCount(7)
         self.rent_table.setHorizontalHeaderLabels(
-            ["ID", "Usuario", "Carro", "Comienzo Renta", "Final Renta", "Costo Total"]
+            [
+                "ID",
+                "Usuario",
+                "Carro",
+                "Comienzo Renta",
+                "Final Renta",
+                "Costo Total",
+                "CreadoEn",
+            ]
         )
         self.rent_table.horizontalHeader().setStretchLastSection(True)
         self.rent_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -161,8 +181,10 @@ class GUIHandler(QMainWindow):
 
         self.rent_id_usuario = QComboBox()
         self.rent_id_carro = QComboBox()
-        self.rent_comienzo_renta = QLineEdit()
-        self.rent_final_renta = QLineEdit()
+        self.rent_comienzo_renta = QDateTimeEdit(QDateTime.currentDateTime())
+        self.rent_comienzo_renta.setCalendarPopup(True)
+        self.rent_final_renta = QDateTimeEdit(QDateTime.currentDateTime())
+        self.rent_final_renta.setCalendarPopup(True)
         self.rent_costo_total = QLineEdit()
 
         form_layout.addWidget(QLabel("ID Usuario"))
@@ -219,11 +241,15 @@ class GUIHandler(QMainWindow):
             QMessageBox.critical(self, "Error", "Error al agregar usuario")
 
     def add_rent(self):
+        comienzo_renta = self.rent_comienzo_renta.dateTime().toString(
+            "yyyy-MM-dd HH:mm:ss"
+        )
+        final_renta = self.rent_final_renta.dateTime().toString("yyyy-MM-dd HH:mm:ss")
         if self.db_handler.add_renta(
             self.rent_id_usuario.currentText(),
             self.rent_id_carro.currentText(),
-            self.rent_comienzo_renta.text(),
-            self.rent_final_renta.text(),
+            comienzo_renta,
+            final_renta,
             self.rent_costo_total.text(),
         ):
             QMessageBox.information(self, "Éxito", "Renta registrada exitosamente")
@@ -271,8 +297,8 @@ class GUIHandler(QMainWindow):
     def clear_rent_form(self):
         self.rent_id_usuario.setCurrentIndex(0)
         self.rent_id_carro.setCurrentIndex(0)
-        self.rent_comienzo_renta.clear()
-        self.rent_final_renta.clear()
+        self.rent_comienzo_renta.setDateTime(QDateTime.currentDateTime())
+        self.rent_final_renta.setDateTime(QDateTime.currentDateTime())
         self.rent_costo_total.clear()
 
     def refresh_cars(self):
