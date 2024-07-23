@@ -9,18 +9,53 @@ class GUIHandler:
     def __init__(self, root):
         self.db_handler = DatabaseHandler()
         self.root = root
+        self.setup_styles()
         self.setup_gui()
+
+    def setup_styles(self):
+        # Configure the style
+        style = ttk.Style(self.root)
+        style.theme_use("default")
+
+        # General style
+        style.configure("TFrame", background="#ffffff")
+        style.configure("TLabel", background="#ffffff", font=("Helvetica", 12))
+        style.configure(
+            "TButton", background="#e1e1e1", font=("Helvetica", 12), borderwidth=1
+        )
+        style.map("TButton", background=[("active", "#d5d5d5")])
+
+        # Treeview style
+        style.configure(
+            "Treeview",
+            background="#ffffff",
+            fieldbackground="#ffffff",
+            font=("Helvetica", 12),
+            borderwidth=1,
+        )
+        style.configure(
+            "Treeview.Heading", background="#f0f0f0", font=("Helvetica", 12, "bold")
+        )
+        style.map(
+            "Treeview",
+            background=[("selected", "#e0e0e0")],
+            foreground=[("selected", "#000000")],
+        )
+
+        # Entry style
+        style.configure("TEntry", font=("Helvetica", 12))
 
     def setup_gui(self):
         self.root.title("Gestión de Carros, Usuarios y Alquileres")
         self.root.geometry("1000x700")
+        self.root.configure(background="#ffffff")
 
         notebook = ttk.Notebook(self.root)
         notebook.pack(pady=10, fill=tk.BOTH, expand=True)
 
-        self.tab_carros = tk.Frame(notebook)
-        self.tab_usuarios = tk.Frame(notebook)
-        self.tab_rentas = tk.Frame(notebook)
+        self.tab_carros = ttk.Frame(notebook)
+        self.tab_usuarios = ttk.Frame(notebook)
+        self.tab_rentas = ttk.Frame(notebook)
 
         notebook.add(self.tab_carros, text="Carros")
         notebook.add(self.tab_usuarios, text="Usuarios")
@@ -48,50 +83,46 @@ class GUIHandler:
         self.tree_carros.heading("Estado", text="Estado", anchor=tk.W)
         self.tree_carros.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
-        frame_carros = tk.Frame(self.tab_carros, padx=20, pady=20)
+        frame_carros = ttk.Frame(self.tab_carros, padding=20)
         frame_carros.pack(pady=10, fill=tk.X)
 
-        tk.Label(frame_carros, text="ID", font=("Helvetica", 12)).grid(
-            row=0, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_id_carro = tk.Entry(frame_carros, font=("Helvetica", 12))
+        ttk.Label(frame_carros, text="ID").grid(row=0, column=0, sticky=tk.W, padx=10)
+        self.entry_id_carro = ttk.Entry(frame_carros)
         self.entry_id_carro.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(frame_carros, text="Marca", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_carros, text="Marca").grid(
             row=1, column=0, sticky=tk.W, padx=10
         )
-        self.entry_marca = tk.Entry(frame_carros, font=("Helvetica", 12))
+        self.entry_marca = ttk.Entry(frame_carros)
         self.entry_marca.grid(row=1, column=1, padx=10, pady=5)
 
-        tk.Label(frame_carros, text="Modelo", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_carros, text="Modelo").grid(
             row=2, column=0, sticky=tk.W, padx=10
         )
-        self.entry_modelo = tk.Entry(frame_carros, font=("Helvetica", 12))
+        self.entry_modelo = ttk.Entry(frame_carros)
         self.entry_modelo.grid(row=2, column=1, padx=10, pady=5)
 
-        tk.Label(frame_carros, text="Placa", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_carros, text="Placa").grid(
             row=3, column=0, sticky=tk.W, padx=10
         )
-        self.entry_placa = tk.Entry(frame_carros, font=("Helvetica", 12))
+        self.entry_placa = ttk.Entry(frame_carros)
         self.entry_placa.grid(row=3, column=1, padx=10, pady=5)
 
-        tk.Label(frame_carros, text="Estado", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_carros, text="Estado").grid(
             row=4, column=0, sticky=tk.W, padx=10
         )
         self.combo_estado = ttk.Combobox(
-            frame_carros,
-            values=["disponible", "no disponible", "fuera de servicio"],
-            font=("Helvetica", 12),
+            frame_carros, values=["disponible", "no disponible", "fuera de servicio"]
         )
         self.combo_estado.grid(row=4, column=1, padx=10, pady=5)
 
-        tk.Button(frame_carros, text="Agregar", command=self.add_carro).grid(
+        ttk.Button(frame_carros, text="Agregar", command=self.add_carro).grid(
             row=5, column=0, padx=10
         )
-        tk.Button(frame_carros, text="Actualizar", command=self.update_carro).grid(
+        ttk.Button(frame_carros, text="Actualizar", command=self.update_carro).grid(
             row=5, column=1, padx=10
         )
-        tk.Button(frame_carros, text="Limpiar", command=self.clear_carros).grid(
+        ttk.Button(frame_carros, text="Limpiar", command=self.clear_carros).grid(
             row=5, column=2, padx=10
         )
 
@@ -120,43 +151,43 @@ class GUIHandler:
         self.tree_usuarios.heading("Apellido", text="Apellido", anchor=tk.W)
         self.tree_usuarios.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
-        frame_usuarios = tk.Frame(self.tab_usuarios, padx=20, pady=20)
+        frame_usuarios = ttk.Frame(self.tab_usuarios, padding=20)
         frame_usuarios.pack(pady=10, fill=tk.X)
 
-        tk.Label(frame_usuarios, text="Username", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_usuarios, text="Username").grid(
             row=0, column=0, sticky=tk.W, padx=10
         )
-        self.entry_username = tk.Entry(frame_usuarios, font=("Helvetica", 12))
+        self.entry_username = ttk.Entry(frame_usuarios)
         self.entry_username.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(frame_usuarios, text="Password", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_usuarios, text="Password").grid(
             row=1, column=0, sticky=tk.W, padx=10
         )
-        self.entry_password = tk.Entry(frame_usuarios, font=("Helvetica", 12), show="*")
+        self.entry_password = ttk.Entry(frame_usuarios, show="*")
         self.entry_password.grid(row=1, column=1, padx=10, pady=5)
 
-        tk.Label(frame_usuarios, text="Email", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_usuarios, text="Email").grid(
             row=2, column=0, sticky=tk.W, padx=10
         )
-        self.entry_email = tk.Entry(frame_usuarios, font=("Helvetica", 12))
+        self.entry_email = ttk.Entry(frame_usuarios)
         self.entry_email.grid(row=2, column=1, padx=10, pady=5)
 
-        tk.Label(frame_usuarios, text="Nombre", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_usuarios, text="Nombre").grid(
             row=3, column=0, sticky=tk.W, padx=10
         )
-        self.entry_nombre = tk.Entry(frame_usuarios, font=("Helvetica", 12))
+        self.entry_nombre = ttk.Entry(frame_usuarios)
         self.entry_nombre.grid(row=3, column=1, padx=10, pady=5)
 
-        tk.Label(frame_usuarios, text="Apellido", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_usuarios, text="Apellido").grid(
             row=4, column=0, sticky=tk.W, padx=10
         )
-        self.entry_apellido = tk.Entry(frame_usuarios, font=("Helvetica", 12))
+        self.entry_apellido = ttk.Entry(frame_usuarios)
         self.entry_apellido.grid(row=4, column=1, padx=10, pady=5)
 
-        tk.Button(frame_usuarios, text="Agregar", command=self.add_usuario).grid(
+        ttk.Button(frame_usuarios, text="Agregar", command=self.add_usuario).grid(
             row=5, column=0, padx=10
         )
-        tk.Button(frame_usuarios, text="Limpiar", command=self.clear_usuarios).grid(
+        ttk.Button(frame_usuarios, text="Limpiar", command=self.clear_usuarios).grid(
             row=5, column=1, padx=10
         )
 
@@ -188,46 +219,46 @@ class GUIHandler:
         self.tree_rentas.heading("CostoTotal", text="Costo Total", anchor=tk.W)
         self.tree_rentas.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
-        frame_rentas = tk.Frame(self.tab_rentas, padx=20, pady=20)
+        frame_rentas = ttk.Frame(self.tab_rentas, padding=20)
         frame_rentas.pack(pady=10, fill=tk.X)
 
-        tk.Label(frame_rentas, text="ID Usuario", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_rentas, text="ID Usuario").grid(
             row=0, column=0, sticky=tk.W, padx=10
         )
-        self.combo_usuario = ttk.Combobox(frame_rentas, font=("Helvetica", 12))
+        self.combo_usuario = ttk.Combobox(frame_rentas)
         self.combo_usuario.grid(row=0, column=1, padx=10, pady=5)
 
-        tk.Label(frame_rentas, text="ID Carro", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_rentas, text="ID Carro").grid(
             row=1, column=0, sticky=tk.W, padx=10
         )
-        self.combo_carro = ttk.Combobox(frame_rentas, font=("Helvetica", 12))
+        self.combo_carro = ttk.Combobox(frame_rentas)
         self.combo_carro.grid(row=1, column=1, padx=10, pady=5)
 
-        tk.Label(frame_rentas, text="Comienzo Renta", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_rentas, text="Comienzo Renta").grid(
             row=2, column=0, sticky=tk.W, padx=10
         )
-        self.entry_comienzo_renta = tk.Entry(frame_rentas, font=("Helvetica", 12))
+        self.entry_comienzo_renta = ttk.Entry(frame_rentas)
         self.entry_comienzo_renta.grid(row=2, column=1, padx=10, pady=5)
 
-        tk.Label(frame_rentas, text="Final Renta", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_rentas, text="Final Renta").grid(
             row=3, column=0, sticky=tk.W, padx=10
         )
-        self.entry_final_renta = tk.Entry(frame_rentas, font=("Helvetica", 12))
+        self.entry_final_renta = ttk.Entry(frame_rentas)
         self.entry_final_renta.grid(row=3, column=1, padx=10, pady=5)
 
-        tk.Label(frame_rentas, text="Costo Total", font=("Helvetica", 12)).grid(
+        ttk.Label(frame_rentas, text="Costo Total").grid(
             row=4, column=0, sticky=tk.W, padx=10
         )
-        self.entry_costo_total = tk.Entry(frame_rentas, font=("Helvetica", 12))
+        self.entry_costo_total = ttk.Entry(frame_rentas)
         self.entry_costo_total.grid(row=4, column=1, padx=10, pady=5)
 
-        tk.Button(frame_rentas, text="Agregar", command=self.add_renta).grid(
+        ttk.Button(frame_rentas, text="Agregar", command=self.add_renta).grid(
             row=5, column=0, padx=10
         )
-        tk.Button(frame_rentas, text="Limpiar", command=self.clear_rentas).grid(
+        ttk.Button(frame_rentas, text="Limpiar", command=self.clear_rentas).grid(
             row=5, column=1, padx=10
         )
-        tk.Button(frame_rentas, text="Finalizar Renta", command=self.end_renta).grid(
+        ttk.Button(frame_rentas, text="Finalizar Renta", command=self.end_renta).grid(
             row=6, column=0, padx=10
         )
 
