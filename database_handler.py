@@ -48,6 +48,10 @@ class DatabaseHandler:
         query = "SELECT * FROM Carros"
         return self.fetch_all(query)
 
+    def fetch_carros_user(self):
+        query = "SELECT ID, Marca, Modelo, Placa, Estado FROM Carros"
+        return self.fetch_all(query)
+
     def fetch_usuarios(self):
         query = "SELECT * FROM Usuarios"
         return self.fetch_all(query)
@@ -84,9 +88,5 @@ class DatabaseHandler:
 
     def verify_user(self, username, password):
         query = "SELECT * FROM Usuarios WHERE Username=%s AND Password=%s"
-        results = self.fetch_all(query, (username, password))
-        return len(results) > 0
-
-    def add_usuario(self, username, password, email, nombre, apellido):
-        query = "INSERT INTO Usuarios (Username, Password, Email, Nombre, Apellido) VALUES (%s, %s, %s, %s, %s)"
-        return self.execute_query(query, (username, password, email, nombre, apellido))
+        result = self.fetch_all(query, (username, password))
+        return len(result) > 0
