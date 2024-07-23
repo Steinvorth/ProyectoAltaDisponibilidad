@@ -28,27 +28,27 @@ class UserGUI(QMainWindow):
         self.setWindowTitle("User Section")
         self.setGeometry(100, 100, 1000, 800)
 
-        # Set up the main widget and layout
+        # Layout Principal
         main_widget = QWidget()
         main_layout = QVBoxLayout(main_widget)
 
-        # Add the menu bar
+        # Barra de Menu
         self.create_menu_bar()
 
-        # Add welcome label
+        # Label de "Welcome"
         welcome_label = QLabel(f"Welcome, {self.username}!")
         welcome_label.setFont(QFont("Helvetica", 16))
         main_layout.addWidget(welcome_label)
 
-        # Add the grid layout for cars
+        # Frid para orden de los carros
         self.car_grid = QGridLayout()
         self.car_grid.setContentsMargins(10, 10, 10, 10)
         main_layout.addLayout(self.car_grid)
 
-        # Display cars
+        # Mostrar los carros
         self.display_cars()
 
-        # Set the central widget with scroll area
+        # Agregar un Scroll al layout principal
         scroll = QScrollArea()
         scroll.setWidget(main_widget)
         scroll.setWidgetResizable(True)
@@ -57,12 +57,12 @@ class UserGUI(QMainWindow):
     def create_menu_bar(self):
         menubar = self.menuBar()
 
-        profile_menu = menubar.addMenu("Profile")
-        profile_action = QAction("Profile", self)
+        profile_menu = menubar.addMenu("Perfil")
+        profile_action = QAction("Perfil", self)
         profile_menu.addAction(profile_action)
 
-        cart_menu = menubar.addMenu("Cart")
-        cart_action = QAction("Cart", self)
+        cart_menu = menubar.addMenu("Perfil}")
+        cart_action = QAction("Perfil", self)
         cart_menu.addAction(cart_action)
 
     def display_cars(self):
@@ -79,6 +79,7 @@ class UserGUI(QMainWindow):
                 col = 0
                 row += 1
 
+    # Crear el cuadrito para los carros
     def create_car_widget(self, car_id, marca, estado):
         widget = QFrame()
         widget.setFixedSize(QSize(300, 250))
@@ -105,7 +106,7 @@ class UserGUI(QMainWindow):
         image_placeholder.setStyleSheet("background-color: #dcdcdc;")
         layout.addWidget(image_placeholder)
 
-        # Car name and status indicator
+        # Nombre y estado del carro
         info_layout = QHBoxLayout()
         info_layout.setContentsMargins(10, 10, 10, 10)
         info_layout.setSpacing(10)

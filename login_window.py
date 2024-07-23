@@ -65,7 +65,7 @@ class LoginWindow(QWidget):
             self.main_window.show()
             self.close()
         else:
-            QMessageBox.critical(self, "Error", "Invalid credentials")
+            QMessageBox.critical(self, "Error", "Credenciales Incorrectas.")
 
     def show_registration_form(self):
         self.registration_window = RegistrationWindow(self)
@@ -109,7 +109,7 @@ class RegistrationWindow(QWidget):
         button_layout = QHBoxLayout()
         layout.addLayout(button_layout)
 
-        register_button = QPushButton("Register")
+        register_button = QPushButton("Registrarse")
         register_button.clicked.connect(self.register)
         button_layout.addWidget(register_button)
 
@@ -123,7 +123,7 @@ class RegistrationWindow(QWidget):
         apellido = self.apellido.text()
 
         if self.db_handler.add_usuario(username, password, email, nombre, apellido):
-            QMessageBox.information(self, "Success", "User registered successfully")
+            QMessageBox.information(self, "Success", "Usuario registrado exitosamente!")
             self.close()
         else:
-            QMessageBox.critical(self, "Error", "Error registering user")
+            QMessageBox.critical(self, "Error", "Error registrando usuario.")

@@ -51,9 +51,11 @@ class GUIHandler(QMainWindow):
 
         self.show()
 
+    # Seccion de Carros para el Administrador
     def setup_car_tab(self):
         layout = QVBoxLayout(self.car_tab)
 
+        # Tabla para ver los datos de la DB sobre los carros
         self.car_table = QTableWidget()
         self.car_table.setColumnCount(5)
         self.car_table.setHorizontalHeaderLabels(
@@ -66,6 +68,7 @@ class GUIHandler(QMainWindow):
         form_layout = QHBoxLayout()
         layout.addLayout(form_layout)
 
+        # seccion para agregar / editar un carro
         self.car_id = QLineEdit()
         self.car_marca = QLineEdit()
         self.car_modelo = QLineEdit()
@@ -100,9 +103,11 @@ class GUIHandler(QMainWindow):
 
         self.refresh_cars()
 
+    # Ventana para ver los usuarios
     def setup_user_tab(self):
         layout = QVBoxLayout(self.user_tab)
 
+        # Tabla para ver datos de Usuarios de DB
         self.user_table = QTableWidget()
         self.user_table.setColumnCount(7)
         self.user_table.setHorizontalHeaderLabels(
@@ -123,6 +128,7 @@ class GUIHandler(QMainWindow):
         form_layout = QHBoxLayout()
         layout.addLayout(form_layout)
 
+        # Formulario para agregar usuarios manualmente
         self.user_id = QLineEdit()
         self.user_username = QLineEdit()
         self.user_password = QLineEdit()
@@ -159,6 +165,7 @@ class GUIHandler(QMainWindow):
     def setup_rent_tab(self):
         layout = QVBoxLayout(self.rent_tab)
 
+        # Tabla para ver datos de las Rentas en DB
         self.rent_table = QTableWidget()
         self.rent_table.setColumnCount(7)
         self.rent_table.setHorizontalHeaderLabels(
@@ -179,6 +186,7 @@ class GUIHandler(QMainWindow):
         form_layout = QHBoxLayout()
         layout.addLayout(form_layout)
 
+        # Formulario para agregar rentas manualmente
         self.rent_id_usuario = QComboBox()
         self.rent_id_carro = QComboBox()
         self.rent_comienzo_renta = QDateTimeEdit(QDateTime.currentDateTime())
@@ -215,6 +223,7 @@ class GUIHandler(QMainWindow):
         self.refresh_rents()
         self.update_comboboxes()
 
+    # Metodos CRUD datos desde admin Usan la clase de database_handler.py
     def add_car(self):
         if self.db_handler.add_carro(
             self.car_marca.text(),
