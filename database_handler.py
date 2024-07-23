@@ -81,3 +81,12 @@ class DatabaseHandler:
         return self.execute_query(
             query, (username, password, email, nombre, apellido, id_usuario)
         )
+
+    def verify_user(self, username, password):
+        query = "SELECT * FROM Usuarios WHERE Username=%s AND Password=%s"
+        results = self.fetch_all(query, (username, password))
+        return len(results) > 0
+
+    def add_usuario(self, username, password, email, nombre, apellido):
+        query = "INSERT INTO Usuarios (Username, Password, Email, Nombre, Apellido) VALUES (%s, %s, %s, %s, %s)"
+        return self.execute_query(query, (username, password, email, nombre, apellido))
