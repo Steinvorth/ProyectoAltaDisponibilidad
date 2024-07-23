@@ -9,9 +9,11 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QFrame,
     QHBoxLayout,
+    QMenuBar,
+    QAction,
 )
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QBrush, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from database_handler import DatabaseHandler
 
 
@@ -24,25 +26,44 @@ class UserGUI(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("User Section")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1000, 800)
 
-        widget = QWidget()
-        layout = QVBoxLayout()
-        widget.setLayout(layout)
+        # Set up the main widget and layout
+        main_widget = QWidget()
+        main_layout = QVBoxLayout(main_widget)
 
+        # Add the menu bar
+        self.create_menu_bar()
+
+        # Add welcome label
         welcome_label = QLabel(f"Welcome, {self.username}!")
         welcome_label.setFont(QFont("Helvetica", 16))
-        layout.addWidget(welcome_label)
+        main_layout.addWidget(welcome_label)
 
+        # Add the grid layout for cars
         self.car_grid = QGridLayout()
-        layout.addLayout(self.car_grid)
+        self.car_grid.setContentsMargins(10, 10, 10, 10)
+        main_layout.addLayout(self.car_grid)
 
+        # Display cars
         self.display_cars()
 
+        # Set the central widget with scroll area
         scroll = QScrollArea()
-        scroll.setWidget(widget)
+        scroll.setWidget(main_widget)
         scroll.setWidgetResizable(True)
         self.setCentralWidget(scroll)
+
+    def create_menu_bar(self):
+        menubar = self.menuBar()
+
+        profile_menu = menubar.addMenu("Profile")
+        profile_action = QAction("Profile", self)
+        profile_menu.addAction(profile_action)
+
+        cart_menu = menubar.addMenu("Cart")
+        cart_action = QAction("Cart", self)
+        cart_menu.addAction(cart_action)
 
     def display_cars(self):
         cars = self.db_handler.fetch_carros_user()
@@ -54,12 +75,13 @@ class UserGUI(QMainWindow):
             car_widget = self.create_car_widget(car_id, marca, estado)
             self.car_grid.addWidget(car_widget, row, col)
             col += 1
-            if col > 2:
+            if col > 4:
                 col = 0
                 row += 1
 
     def create_car_widget(self, car_id, marca, estado):
         widget = QFrame()
+        widget.setFixedSize(QSize(300, 250))
         widget.setFrameShape(QFrame.StyledPanel)
         widget.setStyleSheet(
             """
@@ -79,7 +101,7 @@ class UserGUI(QMainWindow):
 
         # Image placeholder
         image_placeholder = QFrame()
-        image_placeholder.setFixedHeight(100)
+        image_placeholder.setFixedHeight(80)
         image_placeholder.setStyleSheet("background-color: #dcdcdc;")
         layout.addWidget(image_placeholder)
 
@@ -98,7 +120,7 @@ class UserGUI(QMainWindow):
         painter.end()
         status_indicator.setPixmap(pixmap)
 
-        name_label = QLabel(f"Marca: {marca}")
+        name_label = QLabel(marca)
         name_label.setFont(QFont("Helvetica", 14))
 
         info_layout.addWidget(status_indicator)
