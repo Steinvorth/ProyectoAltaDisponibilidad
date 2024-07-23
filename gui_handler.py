@@ -1,385 +1,312 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QComboBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QMessageBox,
+    QHeaderView,
+)
 from database_handler import DatabaseHandler
 
 
-class GUIHandler:
-    def __init__(self, root):
+class GUIHandler(QMainWindow):
+    def __init__(self):
+        super().__init__()
         self.db_handler = DatabaseHandler()
-        self.root = root
-        self.setup_styles()
-        self.setup_gui()
+        self.initUI()
 
-    def setup_styles(self):
-        style = ttk.Style(self.root)
-        style.theme_use("clam")
+    def initUI(self):
+        self.setWindowTitle("Gestión de Carros, Usuarios y Alquileres")
+        self.setGeometry(100, 100, 1200, 800)
 
-        # General style
-        style.configure("TFrame", background="#f0f0f0")
-        style.configure("TLabel", background="#f0f0f0", font=("Helvetica", 12))
-        style.configure(
-            "TButton",
-            background="#4CAF50",
-            foreground="#ffffff",
-            font=("Helvetica", 12),
-            borderwidth=1,
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.layout = QVBoxLayout(self.central_widget)
+
+        self.tabs = QTabWidget()
+        self.layout.addWidget(self.tabs)
+
+        self.car_tab = QWidget()
+        self.user_tab = QWidget()
+        self.rent_tab = QWidget()
+
+        self.tabs.addTab(self.car_tab, "Carros")
+        self.tabs.addTab(self.user_tab, "Usuarios")
+        self.tabs.addTab(self.rent_tab, "Rentas")
+
+        self.setup_car_tab()
+        self.setup_user_tab()
+        self.setup_rent_tab()
+
+        self.show()
+
+    def setup_car_tab(self):
+        layout = QVBoxLayout(self.car_tab)
+
+        self.car_table = QTableWidget()
+        self.car_table.setColumnCount(5)
+        self.car_table.setHorizontalHeaderLabels(
+            ["ID", "Marca", "Modelo", "Placa", "Estado"]
         )
-        style.map("TButton", background=[("active", "#45a049")])
+        self.car_table.horizontalHeader().setStretchLastSection(True)
+        self.car_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        layout.addWidget(self.car_table)
 
-        # Treeview style
-        style.configure(
-            "Treeview",
-            background="#ffffff",
-            fieldbackground="#ffffff",
-            font=("Helvetica", 12),
-            borderwidth=1,
+        form_layout = QHBoxLayout()
+        layout.addLayout(form_layout)
+
+        self.car_id = QLineEdit()
+        self.car_marca = QLineEdit()
+        self.car_modelo = QLineEdit()
+        self.car_placa = QLineEdit()
+        self.car_estado = QComboBox()
+        self.car_estado.addItems(["disponible", "no disponible", "fuera de servicio"])
+
+        form_layout.addWidget(QLabel("ID"))
+        form_layout.addWidget(self.car_id)
+        form_layout.addWidget(QLabel("Marca"))
+        form_layout.addWidget(self.car_marca)
+        form_layout.addWidget(QLabel("Modelo"))
+        form_layout.addWidget(self.car_modelo)
+        form_layout.addWidget(QLabel("Placa"))
+        form_layout.addWidget(self.car_placa)
+        form_layout.addWidget(QLabel("Estado"))
+        form_layout.addWidget(self.car_estado)
+
+        button_layout = QHBoxLayout()
+        layout.addLayout(button_layout)
+
+        add_button = QPushButton("Agregar")
+        add_button.clicked.connect(self.add_car)
+        update_button = QPushButton("Actualizar")
+        update_button.clicked.connect(self.update_car)
+        clear_button = QPushButton("Limpiar")
+        clear_button.clicked.connect(self.clear_car_form)
+
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(update_button)
+        button_layout.addWidget(clear_button)
+
+        self.refresh_cars()
+
+    def setup_user_tab(self):
+        layout = QVBoxLayout(self.user_tab)
+
+        self.user_table = QTableWidget()
+        self.user_table.setColumnCount(5)
+        self.user_table.setHorizontalHeaderLabels(
+            ["ID", "Username", "Email", "Nombre", "Apellido"]
         )
-        style.configure(
-            "Treeview.Heading", background="#f0f0f0", font=("Helvetica", 12, "bold")
+        self.user_table.horizontalHeader().setStretchLastSection(True)
+        self.user_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        layout.addWidget(self.user_table)
+
+        form_layout = QHBoxLayout()
+        layout.addLayout(form_layout)
+
+        self.user_id = QLineEdit()
+        self.user_username = QLineEdit()
+        self.user_password = QLineEdit()
+        self.user_email = QLineEdit()
+        self.user_nombre = QLineEdit()
+        self.user_apellido = QLineEdit()
+
+        form_layout.addWidget(QLabel("ID"))
+        form_layout.addWidget(self.user_id)
+        form_layout.addWidget(QLabel("Username"))
+        form_layout.addWidget(self.user_username)
+        form_layout.addWidget(QLabel("Password"))
+        form_layout.addWidget(self.user_password)
+        form_layout.addWidget(QLabel("Email"))
+        form_layout.addWidget(self.user_email)
+        form_layout.addWidget(QLabel("Nombre"))
+        form_layout.addWidget(self.user_nombre)
+        form_layout.addWidget(QLabel("Apellido"))
+        form_layout.addWidget(self.user_apellido)
+
+        button_layout = QHBoxLayout()
+        layout.addLayout(button_layout)
+
+        add_button = QPushButton("Agregar")
+        add_button.clicked.connect(self.add_user)
+        clear_button = QPushButton("Limpiar")
+        clear_button.clicked.connect(self.clear_user_form)
+
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(clear_button)
+
+        self.refresh_users()
+
+    def setup_rent_tab(self):
+        layout = QVBoxLayout(self.rent_tab)
+
+        self.rent_table = QTableWidget()
+        self.rent_table.setColumnCount(6)
+        self.rent_table.setHorizontalHeaderLabels(
+            ["ID", "Usuario", "Carro", "Comienzo Renta", "Final Renta", "Costo Total"]
         )
-        style.map(
-            "Treeview",
-            background=[("selected", "#e0e0e0")],
-            foreground=[("selected", "#000000")],
-        )
+        self.rent_table.horizontalHeader().setStretchLastSection(True)
+        self.rent_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        layout.addWidget(self.rent_table)
 
-        # Entry style
-        style.configure("TEntry", font=("Helvetica", 12))
+        form_layout = QHBoxLayout()
+        layout.addLayout(form_layout)
 
-    def setup_gui(self):
-        self.root.title("Gestión de Carros, Usuarios y Alquileres")
-        self.root.geometry("1200x800")
-        self.root.configure(background="#f0f0f0")
+        self.rent_id_usuario = QComboBox()
+        self.rent_id_carro = QComboBox()
+        self.rent_comienzo_renta = QLineEdit()
+        self.rent_final_renta = QLineEdit()
+        self.rent_costo_total = QLineEdit()
 
-        notebook = ttk.Notebook(self.root)
-        notebook.pack(pady=10, fill=tk.BOTH, expand=True)
+        form_layout.addWidget(QLabel("ID Usuario"))
+        form_layout.addWidget(self.rent_id_usuario)
+        form_layout.addWidget(QLabel("ID Carro"))
+        form_layout.addWidget(self.rent_id_carro)
+        form_layout.addWidget(QLabel("Comienzo Renta"))
+        form_layout.addWidget(self.rent_comienzo_renta)
+        form_layout.addWidget(QLabel("Final Renta"))
+        form_layout.addWidget(self.rent_final_renta)
+        form_layout.addWidget(QLabel("Costo Total"))
+        form_layout.addWidget(self.rent_costo_total)
 
-        self.tab_carros = ttk.Frame(notebook)
-        self.tab_usuarios = ttk.Frame(notebook)
-        self.tab_rentas = ttk.Frame(notebook)
+        button_layout = QHBoxLayout()
+        layout.addLayout(button_layout)
 
-        notebook.add(self.tab_carros, text="Carros")
-        notebook.add(self.tab_usuarios, text="Usuarios")
-        notebook.add(self.tab_rentas, text="Rentas")
+        add_button = QPushButton("Agregar")
+        add_button.clicked.connect(self.add_rent)
+        finalize_button = QPushButton("Finalizar Renta")
+        finalize_button.clicked.connect(self.end_rent)
+        clear_button = QPushButton("Limpiar")
+        clear_button.clicked.connect(self.clear_rent_form)
 
-        self.setup_carros_tab()
-        self.setup_usuarios_tab()
-        self.setup_rentas_tab()
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(finalize_button)
+        button_layout.addWidget(clear_button)
+
+        self.refresh_rents()
         self.update_comboboxes()
 
-    def setup_carros_tab(self):
-        frame_main = ttk.Frame(self.tab_carros)
-        frame_main.pack(fill=tk.BOTH, expand=True)
-
-        tree_frame = ttk.Frame(frame_main)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.tree_carros = ttk.Treeview(tree_frame)
-        self.tree_carros["columns"] = ("ID", "Marca", "Modelo", "Placa", "Estado")
-        self.tree_carros.column("#0", width=0, stretch=tk.NO)
-        self.tree_carros.column("ID", anchor=tk.CENTER, width=50)
-        self.tree_carros.column("Marca", anchor=tk.W, width=150)
-        self.tree_carros.column("Modelo", anchor=tk.W, width=150)
-        self.tree_carros.column("Placa", anchor=tk.W, width=150)
-        self.tree_carros.column("Estado", anchor=tk.W, width=200)
-        self.tree_carros.heading("#0", text="", anchor=tk.CENTER)
-        self.tree_carros.heading("ID", text="ID", anchor=tk.CENTER)
-        self.tree_carros.heading("Marca", text="Marca", anchor=tk.W)
-        self.tree_carros.heading("Modelo", text="Modelo", anchor=tk.W)
-        self.tree_carros.heading("Placa", text="Placa", anchor=tk.W)
-        self.tree_carros.heading("Estado", text="Estado", anchor=tk.W)
-        self.tree_carros.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
-
-        form_frame = ttk.Frame(frame_main)
-        form_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.create_car_form(form_frame)
-
-        self.refresh_carros()
-
-    def create_car_form(self, frame):
-        ttk.Label(frame, text="ID").grid(row=0, column=0, sticky=tk.W, padx=10)
-        self.entry_id_carro = ttk.Entry(frame)
-        self.entry_id_carro.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Marca").grid(row=1, column=0, sticky=tk.W, padx=10)
-        self.entry_marca = ttk.Entry(frame)
-        self.entry_marca.grid(row=1, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Modelo").grid(row=2, column=0, sticky=tk.W, padx=10)
-        self.entry_modelo = ttk.Entry(frame)
-        self.entry_modelo.grid(row=2, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Placa").grid(row=3, column=0, sticky=tk.W, padx=10)
-        self.entry_placa = ttk.Entry(frame)
-        self.entry_placa.grid(row=3, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Estado").grid(row=4, column=0, sticky=tk.W, padx=10)
-        self.combo_estado = ttk.Combobox(
-            frame, values=["disponible", "no disponible", "fuera de servicio"]
-        )
-        self.combo_estado.grid(row=4, column=1, padx=10, pady=5)
-
-        button_frame = ttk.Frame(frame)
-        button_frame.grid(row=5, columnspan=2, pady=10)
-
-        ttk.Button(button_frame, text="Agregar", command=self.add_carro).grid(
-            row=0, column=0, padx=5
-        )
-        ttk.Button(button_frame, text="Actualizar", command=self.update_carro).grid(
-            row=0, column=1, padx=5
-        )
-        ttk.Button(button_frame, text="Limpiar", command=self.clear_carros).grid(
-            row=0, column=2, padx=5
-        )
-
-    def setup_usuarios_tab(self):
-        frame_main = ttk.Frame(self.tab_usuarios)
-        frame_main.pack(fill=tk.BOTH, expand=True)
-
-        tree_frame = ttk.Frame(frame_main)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.tree_usuarios = ttk.Treeview(tree_frame)
-        self.tree_usuarios["columns"] = (
-            "ID",
-            "Username",
-            "Email",
-            "Nombre",
-            "Apellido",
-        )
-        self.tree_usuarios.column("#0", width=0, stretch=tk.NO)
-        self.tree_usuarios.column("ID", anchor=tk.CENTER, width=50)
-        self.tree_usuarios.column("Username", anchor=tk.W, width=150)
-        self.tree_usuarios.column("Email", anchor=tk.W, width=150)
-        self.tree_usuarios.column("Nombre", anchor=tk.W, width=150)
-        self.tree_usuarios.column("Apellido", anchor=tk.W, width=150)
-        self.tree_usuarios.heading("#0", text="", anchor=tk.CENTER)
-        self.tree_usuarios.heading("ID", text="ID", anchor=tk.CENTER)
-        self.tree_usuarios.heading("Username", text="Username", anchor=tk.W)
-        self.tree_usuarios.heading("Email", text="Email", anchor=tk.W)
-        self.tree_usuarios.heading("Nombre", text="Nombre", anchor=tk.W)
-        self.tree_usuarios.heading("Apellido", text="Apellido", anchor=tk.W)
-        self.tree_usuarios.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
-
-        form_frame = ttk.Frame(frame_main)
-        form_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.create_user_form(form_frame)
-
-        self.refresh_usuarios()
-
-    def create_user_form(self, frame):
-        ttk.Label(frame, text="Username").grid(row=0, column=0, sticky=tk.W, padx=10)
-        self.entry_username = ttk.Entry(frame)
-        self.entry_username.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Password").grid(row=1, column=0, sticky=tk.W, padx=10)
-        self.entry_password = ttk.Entry(frame, show="*")
-        self.entry_password.grid(row=1, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Email").grid(row=2, column=0, sticky=tk.W, padx=10)
-        self.entry_email = ttk.Entry(frame)
-        self.entry_email.grid(row=2, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Nombre").grid(row=3, column=0, sticky=tk.W, padx=10)
-        self.entry_nombre = ttk.Entry(frame)
-        self.entry_nombre.grid(row=3, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Apellido").grid(row=4, column=0, sticky=tk.W, padx=10)
-        self.entry_apellido = ttk.Entry(frame)
-        self.entry_apellido.grid(row=4, column=1, padx=10, pady=5)
-
-        button_frame = ttk.Frame(frame)
-        button_frame.grid(row=5, columnspan=2, pady=10)
-
-        ttk.Button(button_frame, text="Agregar", command=self.add_usuario).grid(
-            row=0, column=0, padx=5
-        )
-        ttk.Button(button_frame, text="Limpiar", command=self.clear_usuarios).grid(
-            row=0, column=1, padx=5
-        )
-
-    def setup_rentas_tab(self):
-        frame_main = ttk.Frame(self.tab_rentas)
-        frame_main.pack(fill=tk.BOTH, expand=True)
-
-        tree_frame = ttk.Frame(frame_main)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.tree_rentas = ttk.Treeview(tree_frame)
-        self.tree_rentas["columns"] = (
-            "ID",
-            "Usuario",
-            "Carro",
-            "ComienzoRenta",
-            "FinalRenta",
-            "CostoTotal",
-        )
-        self.tree_rentas.column("#0", width=0, stretch=tk.NO)
-        self.tree_rentas.column("ID", anchor=tk.CENTER, width=50)
-        self.tree_rentas.column("Usuario", anchor=tk.W, width=150)
-        self.tree_rentas.column("Carro", anchor=tk.W, width=150)
-        self.tree_rentas.column("ComienzoRenta", anchor=tk.W, width=150)
-        self.tree_rentas.column("FinalRenta", anchor=tk.W, width=150)
-        self.tree_rentas.column("CostoTotal", anchor=tk.W, width=150)
-        self.tree_rentas.heading("#0", text="", anchor=tk.CENTER)
-        self.tree_rentas.heading("ID", text="ID", anchor=tk.CENTER)
-        self.tree_rentas.heading("Usuario", text="Usuario", anchor=tk.W)
-        self.tree_rentas.heading("Carro", text="Carro", anchor=tk.W)
-        self.tree_rentas.heading("ComienzoRenta", text="Comienzo Renta", anchor=tk.W)
-        self.tree_rentas.heading("FinalRenta", text="Final Renta", anchor=tk.W)
-        self.tree_rentas.heading("CostoTotal", text="Costo Total", anchor=tk.W)
-        self.tree_rentas.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
-
-        form_frame = ttk.Frame(frame_main)
-        form_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.create_renta_form(form_frame)
-
-        self.refresh_rentas()
-
-    def create_renta_form(self, frame):
-        ttk.Label(frame, text="ID Usuario").grid(row=0, column=0, sticky=tk.W, padx=10)
-        self.combo_usuario = ttk.Combobox(frame)
-        self.combo_usuario.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="ID Carro").grid(row=1, column=0, sticky=tk.W, padx=10)
-        self.combo_carro = ttk.Combobox(frame)
-        self.combo_carro.grid(row=1, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Comienzo Renta").grid(
-            row=2, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_comienzo_renta = ttk.Entry(frame)
-        self.entry_comienzo_renta.grid(row=2, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Final Renta").grid(row=3, column=0, sticky=tk.W, padx=10)
-        self.entry_final_renta = ttk.Entry(frame)
-        self.entry_final_renta.grid(row=3, column=1, padx=10, pady=5)
-
-        ttk.Label(frame, text="Costo Total").grid(row=4, column=0, sticky=tk.W, padx=10)
-        self.entry_costo_total = ttk.Entry(frame)
-        self.entry_costo_total.grid(row=4, column=1, padx=10, pady=5)
-
-        button_frame = ttk.Frame(frame)
-        button_frame.grid(row=5, columnspan=2, pady=10)
-
-        ttk.Button(button_frame, text="Agregar", command=self.add_renta).grid(
-            row=0, column=0, padx=5
-        )
-        ttk.Button(button_frame, text="Limpiar", command=self.clear_rentas).grid(
-            row=0, column=1, padx=5
-        )
-        ttk.Button(button_frame, text="Finalizar Renta", command=self.end_renta).grid(
-            row=0, column=2, padx=5
-        )
-
-    def add_carro(self):
+    def add_car(self):
         if self.db_handler.add_carro(
-            self.entry_marca.get(),
-            self.entry_modelo.get(),
-            self.entry_placa.get(),
-            self.combo_estado.get(),
+            self.car_marca.text(),
+            self.car_modelo.text(),
+            self.car_placa.text(),
+            self.car_estado.currentText(),
         ):
-            messagebox.showinfo("Éxito", "Carro agregado exitosamente")
-            self.refresh_carros()
+            QMessageBox.information(self, "Éxito", "Carro agregado exitosamente")
+            self.refresh_cars()
         else:
-            messagebox.showerror("Error", "Error al agregar carro")
+            QMessageBox.critical(self, "Error", "Error al agregar carro")
 
-    def add_usuario(self):
+    def add_user(self):
         if self.db_handler.add_usuario(
-            self.entry_username.get(),
-            self.entry_password.get(),
-            self.entry_email.get(),
-            self.entry_nombre.get(),
-            self.entry_apellido.get(),
+            self.user_username.text(),
+            self.user_password.text(),
+            self.user_email.text(),
+            self.user_nombre.text(),
+            self.user_apellido.text(),
         ):
-            messagebox.showinfo("Éxito", "Usuario agregado exitosamente")
-            self.refresh_usuarios()
+            QMessageBox.information(self, "Éxito", "Usuario agregado exitosamente")
+            self.refresh_users()
         else:
-            messagebox.showerror("Error", "Error al agregar usuario")
+            QMessageBox.critical(self, "Error", "Error al agregar usuario")
 
-    def add_renta(self):
+    def add_rent(self):
         if self.db_handler.add_renta(
-            self.combo_usuario.get(),
-            self.combo_carro.get(),
-            self.entry_comienzo_renta.get(),
-            self.entry_final_renta.get(),
-            self.entry_costo_total.get(),
+            self.rent_id_usuario.currentText(),
+            self.rent_id_carro.currentText(),
+            self.rent_comienzo_renta.text(),
+            self.rent_final_renta.text(),
+            self.rent_costo_total.text(),
         ):
-            messagebox.showinfo("Éxito", "Renta registrada exitosamente")
-            self.refresh_rentas()
+            QMessageBox.information(self, "Éxito", "Renta registrada exitosamente")
+            self.refresh_rents()
         else:
-            messagebox.showerror("Error", "Error al agregar renta")
+            QMessageBox.critical(self, "Error", "Error al agregar renta")
 
-    def end_renta(self):
-        selected_item = self.tree_rentas.selection()[0]
-        selected_renta_id = self.tree_rentas.item(selected_item, "values")[0]
-        if self.db_handler.end_renta(selected_renta_id, self.entry_final_renta.get()):
-            messagebox.showinfo("Éxito", "Renta finalizada exitosamente")
-            self.refresh_rentas()
+    def end_rent(self):
+        selected_row = self.rent_table.currentRow()
+        selected_renta_id = self.rent_table.item(selected_row, 0).text()
+        if self.db_handler.end_renta(selected_renta_id, self.rent_final_renta.text()):
+            QMessageBox.information(self, "Éxito", "Renta finalizada exitosamente")
+            self.refresh_rents()
         else:
-            messagebox.showerror("Error", "Error al finalizar renta")
+            QMessageBox.critical(self, "Error", "Error al finalizar renta")
 
-    def update_carro(self):
+    def update_car(self):
         if self.db_handler.update_carro(
-            self.entry_id_carro.get(),
-            self.entry_marca.get(),
-            self.entry_modelo.get(),
-            self.entry_placa.get(),
-            self.combo_estado.get(),
+            self.car_id.text(),
+            self.car_marca.text(),
+            self.car_modelo.text(),
+            self.car_placa.text(),
+            self.car_estado.currentText(),
         ):
-            messagebox.showinfo("Éxito", "Carro actualizado exitosamente")
-            self.refresh_carros()
+            QMessageBox.information(self, "Éxito", "Carro actualizado exitosamente")
+            self.refresh_cars()
         else:
-            messagebox.showerror("Error", "Error al actualizar carro")
+            QMessageBox.critical(self, "Error", "Error al actualizar carro")
 
-    def clear_carros(self):
-        self.entry_id_carro.delete(0, tk.END)
-        self.entry_marca.delete(0, tk.END)
-        self.entry_modelo.delete(0, tk.END)
-        self.entry_placa.delete(0, tk.END)
-        self.combo_estado.set("")
+    def clear_car_form(self):
+        self.car_id.clear()
+        self.car_marca.clear()
+        self.car_modelo.clear()
+        self.car_placa.clear()
+        self.car_estado.setCurrentIndex(0)
 
-    def clear_usuarios(self):
-        self.entry_username.delete(0, tk.END)
-        self.entry_password.delete(0, tk.END)
-        self.entry_email.delete(0, tk.END)
-        self.entry_nombre.delete(0, tk.END)
-        self.entry_apellido.delete(0, tk.END)
+    def clear_user_form(self):
+        self.user_id.clear()
+        self.user_username.clear()
+        self.user_password.clear()
+        self.user_email.clear()
+        self.user_nombre.clear()
+        self.user_apellido.clear()
 
-    def clear_rentas(self):
-        self.combo_usuario.set("")
-        self.combo_carro.set("")
-        self.entry_comienzo_renta.delete(0, tk.END)
-        self.entry_final_renta.delete(0, tk.END)
-        self.entry_costo_total.delete(0, tk.END)
+    def clear_rent_form(self):
+        self.rent_id_usuario.setCurrentIndex(0)
+        self.rent_id_carro.setCurrentIndex(0)
+        self.rent_comienzo_renta.clear()
+        self.rent_final_renta.clear()
+        self.rent_costo_total.clear()
 
-    def refresh_carros(self):
-        for item in self.tree_carros.get_children():
-            self.tree_carros.delete(item)
+    def refresh_cars(self):
+        self.car_table.setRowCount(0)
         rows = self.db_handler.fetch_carros()
         for row in rows:
-            self.tree_carros.insert("", tk.END, values=row)
+            row_position = self.car_table.rowCount()
+            self.car_table.insertRow(row_position)
+            for col, data in enumerate(row):
+                self.car_table.setItem(row_position, col, QTableWidgetItem(str(data)))
 
-    def refresh_usuarios(self):
-        for item in self.tree_usuarios.get_children():
-            self.tree_usuarios.delete(item)
+    def refresh_users(self):
+        self.user_table.setRowCount(0)
         rows = self.db_handler.fetch_usuarios()
         for row in rows:
-            self.tree_usuarios.insert("", tk.END, values=row)
+            row_position = self.user_table.rowCount()
+            self.user_table.insertRow(row_position)
+            for col, data in enumerate(row):
+                self.user_table.setItem(row_position, col, QTableWidgetItem(str(data)))
 
-    def refresh_rentas(self):
-        for item in self.tree_rentas.get_children():
-            self.tree_rentas.delete(item)
+    def refresh_rents(self):
+        self.rent_table.setRowCount(0)
         rows = self.db_handler.fetch_rentas()
         for row in rows:
-            self.tree_rentas.insert("", tk.END, values=row)
+            row_position = self.rent_table.rowCount()
+            self.rent_table.insertRow(row_position)
+            for col, data in enumerate(row):
+                self.rent_table.setItem(row_position, col, QTableWidgetItem(str(data)))
 
     def update_comboboxes(self):
         usuarios = self.db_handler.fetch_usuarios()
         carros = self.db_handler.fetch_carros()
 
-        self.combo_usuario["values"] = [u[0] for u in usuarios]
-        self.combo_carro["values"] = [c[0] for c in carros]
+        self.rent_id_usuario.clear()
+        self.rent_id_usuario.addItems([str(u[0]) for u in usuarios])
+        self.rent_id_carro.clear()
+        self.rent_id_carro.addItems([str(c[0]) for c in carros])
