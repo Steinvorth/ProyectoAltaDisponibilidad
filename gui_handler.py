@@ -1,5 +1,3 @@
-# gui_handler.py
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database_handler import DatabaseHandler
@@ -13,17 +11,20 @@ class GUIHandler:
         self.setup_gui()
 
     def setup_styles(self):
-        # Configure the style
         style = ttk.Style(self.root)
-        style.theme_use("default")
+        style.theme_use("clam")
 
         # General style
-        style.configure("TFrame", background="#ffffff")
-        style.configure("TLabel", background="#ffffff", font=("Helvetica", 12))
+        style.configure("TFrame", background="#f0f0f0")
+        style.configure("TLabel", background="#f0f0f0", font=("Helvetica", 12))
         style.configure(
-            "TButton", background="#e1e1e1", font=("Helvetica", 12), borderwidth=1
+            "TButton",
+            background="#4CAF50",
+            foreground="#ffffff",
+            font=("Helvetica", 12),
+            borderwidth=1,
         )
-        style.map("TButton", background=[("active", "#d5d5d5")])
+        style.map("TButton", background=[("active", "#45a049")])
 
         # Treeview style
         style.configure(
@@ -47,8 +48,8 @@ class GUIHandler:
 
     def setup_gui(self):
         self.root.title("Gestión de Carros, Usuarios y Alquileres")
-        self.root.geometry("1000x700")
-        self.root.configure(background="#ffffff")
+        self.root.geometry("1200x800")
+        self.root.configure(background="#f0f0f0")
 
         notebook = ttk.Notebook(self.root)
         notebook.pack(pady=10, fill=tk.BOTH, expand=True)
@@ -67,7 +68,13 @@ class GUIHandler:
         self.update_comboboxes()
 
     def setup_carros_tab(self):
-        self.tree_carros = ttk.Treeview(self.tab_carros)
+        frame_main = ttk.Frame(self.tab_carros)
+        frame_main.pack(fill=tk.BOTH, expand=True)
+
+        tree_frame = ttk.Frame(frame_main)
+        tree_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_carros = ttk.Treeview(tree_frame)
         self.tree_carros["columns"] = ("ID", "Marca", "Modelo", "Placa", "Estado")
         self.tree_carros.column("#0", width=0, stretch=tk.NO)
         self.tree_carros.column("ID", anchor=tk.CENTER, width=50)
@@ -83,53 +90,57 @@ class GUIHandler:
         self.tree_carros.heading("Estado", text="Estado", anchor=tk.W)
         self.tree_carros.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
-        frame_carros = ttk.Frame(self.tab_carros, padding=20)
-        frame_carros.pack(pady=10, fill=tk.X)
+        form_frame = ttk.Frame(frame_main)
+        form_frame.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(frame_carros, text="ID").grid(row=0, column=0, sticky=tk.W, padx=10)
-        self.entry_id_carro = ttk.Entry(frame_carros)
-        self.entry_id_carro.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_carros, text="Marca").grid(
-            row=1, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_marca = ttk.Entry(frame_carros)
-        self.entry_marca.grid(row=1, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_carros, text="Modelo").grid(
-            row=2, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_modelo = ttk.Entry(frame_carros)
-        self.entry_modelo.grid(row=2, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_carros, text="Placa").grid(
-            row=3, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_placa = ttk.Entry(frame_carros)
-        self.entry_placa.grid(row=3, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_carros, text="Estado").grid(
-            row=4, column=0, sticky=tk.W, padx=10
-        )
-        self.combo_estado = ttk.Combobox(
-            frame_carros, values=["disponible", "no disponible", "fuera de servicio"]
-        )
-        self.combo_estado.grid(row=4, column=1, padx=10, pady=5)
-
-        ttk.Button(frame_carros, text="Agregar", command=self.add_carro).grid(
-            row=5, column=0, padx=10
-        )
-        ttk.Button(frame_carros, text="Actualizar", command=self.update_carro).grid(
-            row=5, column=1, padx=10
-        )
-        ttk.Button(frame_carros, text="Limpiar", command=self.clear_carros).grid(
-            row=5, column=2, padx=10
-        )
+        self.create_car_form(form_frame)
 
         self.refresh_carros()
 
+    def create_car_form(self, frame):
+        ttk.Label(frame, text="ID").grid(row=0, column=0, sticky=tk.W, padx=10)
+        self.entry_id_carro = ttk.Entry(frame)
+        self.entry_id_carro.grid(row=0, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Marca").grid(row=1, column=0, sticky=tk.W, padx=10)
+        self.entry_marca = ttk.Entry(frame)
+        self.entry_marca.grid(row=1, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Modelo").grid(row=2, column=0, sticky=tk.W, padx=10)
+        self.entry_modelo = ttk.Entry(frame)
+        self.entry_modelo.grid(row=2, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Placa").grid(row=3, column=0, sticky=tk.W, padx=10)
+        self.entry_placa = ttk.Entry(frame)
+        self.entry_placa.grid(row=3, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Estado").grid(row=4, column=0, sticky=tk.W, padx=10)
+        self.combo_estado = ttk.Combobox(
+            frame, values=["disponible", "no disponible", "fuera de servicio"]
+        )
+        self.combo_estado.grid(row=4, column=1, padx=10, pady=5)
+
+        button_frame = ttk.Frame(frame)
+        button_frame.grid(row=5, columnspan=2, pady=10)
+
+        ttk.Button(button_frame, text="Agregar", command=self.add_carro).grid(
+            row=0, column=0, padx=5
+        )
+        ttk.Button(button_frame, text="Actualizar", command=self.update_carro).grid(
+            row=0, column=1, padx=5
+        )
+        ttk.Button(button_frame, text="Limpiar", command=self.clear_carros).grid(
+            row=0, column=2, padx=5
+        )
+
     def setup_usuarios_tab(self):
-        self.tree_usuarios = ttk.Treeview(self.tab_usuarios)
+        frame_main = ttk.Frame(self.tab_usuarios)
+        frame_main.pack(fill=tk.BOTH, expand=True)
+
+        tree_frame = ttk.Frame(frame_main)
+        tree_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_usuarios = ttk.Treeview(tree_frame)
         self.tree_usuarios["columns"] = (
             "ID",
             "Username",
@@ -151,50 +162,52 @@ class GUIHandler:
         self.tree_usuarios.heading("Apellido", text="Apellido", anchor=tk.W)
         self.tree_usuarios.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
-        frame_usuarios = ttk.Frame(self.tab_usuarios, padding=20)
-        frame_usuarios.pack(pady=10, fill=tk.X)
+        form_frame = ttk.Frame(frame_main)
+        form_frame.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(frame_usuarios, text="Username").grid(
-            row=0, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_username = ttk.Entry(frame_usuarios)
-        self.entry_username.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_usuarios, text="Password").grid(
-            row=1, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_password = ttk.Entry(frame_usuarios, show="*")
-        self.entry_password.grid(row=1, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_usuarios, text="Email").grid(
-            row=2, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_email = ttk.Entry(frame_usuarios)
-        self.entry_email.grid(row=2, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_usuarios, text="Nombre").grid(
-            row=3, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_nombre = ttk.Entry(frame_usuarios)
-        self.entry_nombre.grid(row=3, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_usuarios, text="Apellido").grid(
-            row=4, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_apellido = ttk.Entry(frame_usuarios)
-        self.entry_apellido.grid(row=4, column=1, padx=10, pady=5)
-
-        ttk.Button(frame_usuarios, text="Agregar", command=self.add_usuario).grid(
-            row=5, column=0, padx=10
-        )
-        ttk.Button(frame_usuarios, text="Limpiar", command=self.clear_usuarios).grid(
-            row=5, column=1, padx=10
-        )
+        self.create_user_form(form_frame)
 
         self.refresh_usuarios()
 
+    def create_user_form(self, frame):
+        ttk.Label(frame, text="Username").grid(row=0, column=0, sticky=tk.W, padx=10)
+        self.entry_username = ttk.Entry(frame)
+        self.entry_username.grid(row=0, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Password").grid(row=1, column=0, sticky=tk.W, padx=10)
+        self.entry_password = ttk.Entry(frame, show="*")
+        self.entry_password.grid(row=1, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Email").grid(row=2, column=0, sticky=tk.W, padx=10)
+        self.entry_email = ttk.Entry(frame)
+        self.entry_email.grid(row=2, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Nombre").grid(row=3, column=0, sticky=tk.W, padx=10)
+        self.entry_nombre = ttk.Entry(frame)
+        self.entry_nombre.grid(row=3, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Apellido").grid(row=4, column=0, sticky=tk.W, padx=10)
+        self.entry_apellido = ttk.Entry(frame)
+        self.entry_apellido.grid(row=4, column=1, padx=10, pady=5)
+
+        button_frame = ttk.Frame(frame)
+        button_frame.grid(row=5, columnspan=2, pady=10)
+
+        ttk.Button(button_frame, text="Agregar", command=self.add_usuario).grid(
+            row=0, column=0, padx=5
+        )
+        ttk.Button(button_frame, text="Limpiar", command=self.clear_usuarios).grid(
+            row=0, column=1, padx=5
+        )
+
     def setup_rentas_tab(self):
-        self.tree_rentas = ttk.Treeview(self.tab_rentas)
+        frame_main = ttk.Frame(self.tab_rentas)
+        frame_main.pack(fill=tk.BOTH, expand=True)
+
+        tree_frame = ttk.Frame(frame_main)
+        tree_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_rentas = ttk.Treeview(tree_frame)
         self.tree_rentas["columns"] = (
             "ID",
             "Usuario",
@@ -219,50 +232,48 @@ class GUIHandler:
         self.tree_rentas.heading("CostoTotal", text="Costo Total", anchor=tk.W)
         self.tree_rentas.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
-        frame_rentas = ttk.Frame(self.tab_rentas, padding=20)
-        frame_rentas.pack(pady=10, fill=tk.X)
+        form_frame = ttk.Frame(frame_main)
+        form_frame.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Label(frame_rentas, text="ID Usuario").grid(
-            row=0, column=0, sticky=tk.W, padx=10
-        )
-        self.combo_usuario = ttk.Combobox(frame_rentas)
-        self.combo_usuario.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_rentas, text="ID Carro").grid(
-            row=1, column=0, sticky=tk.W, padx=10
-        )
-        self.combo_carro = ttk.Combobox(frame_rentas)
-        self.combo_carro.grid(row=1, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_rentas, text="Comienzo Renta").grid(
-            row=2, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_comienzo_renta = ttk.Entry(frame_rentas)
-        self.entry_comienzo_renta.grid(row=2, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_rentas, text="Final Renta").grid(
-            row=3, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_final_renta = ttk.Entry(frame_rentas)
-        self.entry_final_renta.grid(row=3, column=1, padx=10, pady=5)
-
-        ttk.Label(frame_rentas, text="Costo Total").grid(
-            row=4, column=0, sticky=tk.W, padx=10
-        )
-        self.entry_costo_total = ttk.Entry(frame_rentas)
-        self.entry_costo_total.grid(row=4, column=1, padx=10, pady=5)
-
-        ttk.Button(frame_rentas, text="Agregar", command=self.add_renta).grid(
-            row=5, column=0, padx=10
-        )
-        ttk.Button(frame_rentas, text="Limpiar", command=self.clear_rentas).grid(
-            row=5, column=1, padx=10
-        )
-        ttk.Button(frame_rentas, text="Finalizar Renta", command=self.end_renta).grid(
-            row=6, column=0, padx=10
-        )
+        self.create_renta_form(form_frame)
 
         self.refresh_rentas()
+
+    def create_renta_form(self, frame):
+        ttk.Label(frame, text="ID Usuario").grid(row=0, column=0, sticky=tk.W, padx=10)
+        self.combo_usuario = ttk.Combobox(frame)
+        self.combo_usuario.grid(row=0, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="ID Carro").grid(row=1, column=0, sticky=tk.W, padx=10)
+        self.combo_carro = ttk.Combobox(frame)
+        self.combo_carro.grid(row=1, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Comienzo Renta").grid(
+            row=2, column=0, sticky=tk.W, padx=10
+        )
+        self.entry_comienzo_renta = ttk.Entry(frame)
+        self.entry_comienzo_renta.grid(row=2, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Final Renta").grid(row=3, column=0, sticky=tk.W, padx=10)
+        self.entry_final_renta = ttk.Entry(frame)
+        self.entry_final_renta.grid(row=3, column=1, padx=10, pady=5)
+
+        ttk.Label(frame, text="Costo Total").grid(row=4, column=0, sticky=tk.W, padx=10)
+        self.entry_costo_total = ttk.Entry(frame)
+        self.entry_costo_total.grid(row=4, column=1, padx=10, pady=5)
+
+        button_frame = ttk.Frame(frame)
+        button_frame.grid(row=5, columnspan=2, pady=10)
+
+        ttk.Button(button_frame, text="Agregar", command=self.add_renta).grid(
+            row=0, column=0, padx=5
+        )
+        ttk.Button(button_frame, text="Limpiar", command=self.clear_rentas).grid(
+            row=0, column=1, padx=5
+        )
+        ttk.Button(button_frame, text="Finalizar Renta", command=self.end_renta).grid(
+            row=0, column=2, padx=5
+        )
 
     def add_carro(self):
         if self.db_handler.add_carro(
@@ -370,9 +381,5 @@ class GUIHandler:
         usuarios = self.db_handler.fetch_usuarios()
         carros = self.db_handler.fetch_carros()
 
-        self.combo_usuario["values"] = [
-            u[0] for u in usuarios
-        ]  # Asume que el ID está en la primera columna
-        self.combo_carro["values"] = [
-            c[0] for c in carros
-        ]  # Asume que el ID está en la primera columna
+        self.combo_usuario["values"] = [u[0] for u in usuarios]
+        self.combo_carro["values"] = [c[0] for c in carros]
