@@ -20,7 +20,7 @@
                 <!-- Login Form -->
                 <form id="login-form">
                     <div class="mb-3">
-                        <label for="login-username" class="form-label">Username</label>
+                        <label for="login-username" class="form-label">Usuario</label>
                         <input type="text" class="form-control" id="login-username" required>
                     </div>
                     <div class="mb-3">
@@ -35,7 +35,7 @@
                 <!-- Signup Form -->
                 <form id="signup-form">
                     <div class="mb-3">
-                        <label for="signup-username" class="form-label">Username</label>
+                        <label for="signup-username" class="form-label">Usuario</label>
                         <input type="text" class="form-control" id="signup-username" required>
                     </div>
                     <div class="mb-3">
@@ -46,7 +46,7 @@
                         <label for="signup-password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="signup-password" required>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Create Account</button>
+                    <button type="submit" class="btn btn-success w-100">Crear Cuenta</button>
                 </form>
 
             </div>
@@ -62,7 +62,7 @@
             alertBox.removeClass('d-none alert-success alert-danger').addClass(`alert-${type}`).text(message);
         }
 
-        // Handle login
+        // login
         $('#login-form').submit(function(event) {
             event.preventDefault();
             const username = $('#login-username').val();
@@ -74,7 +74,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ Username: username, Password: password }),
                 success: function(response) {
-                    console.log(response.userId); // Debugging: Check if userId is returned
+                    console.log(response.userId); // Debugging: Revisar si se el userId está siendo guardado correctamente en localStorage
                     if (response.userId) {
                         showAlert('Login successful!', 'success');
                         localStorage.setItem('userId', response.userId);
@@ -90,7 +90,7 @@
         });
 
 
-        // Handle signup
+        // signup
         $('#signup-form').submit(function(event) {
             event.preventDefault();
             const username = $('#signup-username').val();
@@ -104,7 +104,6 @@
                 data: JSON.stringify({ Username: username, Email: email, Password: password }),
                 success: function(response) {
                     showAlert('Account created successfully!', 'success');
-                    // Optionally, log the user in automatically or redirect to the login page
                 },
                 error: function(xhr, status, error) {
                     showAlert('Account creation failed: ' + xhr.responseText, 'danger');

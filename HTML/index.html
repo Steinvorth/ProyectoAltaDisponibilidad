@@ -29,7 +29,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Car Renting Service</a>
+            <a class="navbar-brand" href="#">Janus Drive</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -38,7 +38,7 @@
                         </a>
                     </li>
                     <li class="nav-item d-none" id="logout-item">
-                        <a class="nav-link" href="#" id="logout-link">Logout</a>
+                        <a class="nav-link" href="#" id="logout-link">Salir</a>
                     </li>
                 </ul>
             </div>
@@ -47,10 +47,10 @@
 
     <!-- Car List -->
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Available Cars</h1>
+        <h1 class="text-center mb-4">Carros Disponibles</h1>
 
         <div class="row" id="car-list">
-            <!-- Cards will be dynamically inserted here -->
+            <!-- Las cajas de carros se generarán aquí dinamicamente -->
         </div>
     </div>
 
@@ -59,11 +59,11 @@
 
     <script>
         $(document).ready(function() {
-            // Check if the user is logged in
+            // Vemossi hay un usuario logueado
             const userId = localStorage.getItem('userId');
 
             if (userId) {
-                $('#account-link').text('Account').attr('href', 'user_account.html');
+                $('#account-link').text('Cuenta').attr('href', 'user_account.html');
                 $('#logout-item').removeClass('d-none');
             }
 
@@ -73,11 +73,11 @@
             });
 
             $.ajax({
-                url: '/carros', // API route to get car data
+                url: '/carros', // rutapara obtener la lista de carros disponibles
                 method: 'GET',
                 success: function(data) {
                     const carList = $('#car-list');
-                    carList.empty(); // Clear any existing content
+                    carList.empty(); // borrar el contenido actual de la lista
                     data.forEach(car => {
                         let statusClass = '';
                         let statusText = '';
@@ -96,7 +96,7 @@
                                 statusText = 'In Maintenance';
                                 break;
                             default:
-                                statusClass = 'status-available'; // Default to available if no match
+                                statusClass = 'status-available'; // El default por si acaso
                                 statusText = 'Available';
                         }
 
@@ -108,7 +108,7 @@
                                         <h5 class="card-title">${car.Marca} ${car.Modelo}</h5>
                                         <p class="card-text">${car.DetalleEstado}</p>
                                         <p class="card-text"><span class="status-circle ${statusClass}"></span><strong>${statusText}</strong></p>
-                                        <a href="rent_action.html?carId=${car.ID}" class="btn btn-primary">Rent Now</a>
+                                        <a href="rent_action.html?carId=${car.ID}" class="btn btn-primary">Alquilar</a>
                                     </div>
                                 </div>
                             </div>

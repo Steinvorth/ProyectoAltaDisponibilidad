@@ -36,7 +36,7 @@
             object-fit: cover;
         }
 
-        /* Module styling for depth */
+        /* Agregar modulo para que tenga profundidad*/
         .module-container {
             background-color: #fff;
             padding: 30px;
@@ -56,7 +56,7 @@
             padding: 10px;
         }
 
-        /* Alert styling */
+        /* Alerta */
         .alert-container {
             margin-top: 20px;
         }
@@ -67,14 +67,14 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="index.html">Car Renting Service</a>
+            <a class="navbar-brand" href="index.html">Janus Drive</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="user_account.html">Account</a>
+                        <a class="nav-link" href="user_account.html">Cuenta</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="logout-link">Logout</a>
+                        <a class="nav-link" href="#" id="logout-link">Salir</a>
                     </li>
                 </ul>
             </div>
@@ -82,7 +82,7 @@
     </nav>
 
     <div class="container mt-5">
-        <h1 class="text-center">Rent Car</h1>
+        <h1 class="text-center">Rentar un Carro</h1>
 
         <div class="alert-container">
             <div id="alert-message" class="alert d-none" role="alert"></div>
@@ -92,27 +92,27 @@
             <div class="car-details">
                 <div class="car-info">
                     <div id="car-info">
-                        <!-- Car information will be dynamically inserted here -->
+                        <!-- Los datos del carro van aqui dinamicamente -->
                     </div>
                     <img id="car-image" src="#" alt="Car Image">
                 </div>
 
                 <div class="car-form">
-                    <!-- Rental Form -->
+                    <!-- formulario de renta -->
                     <form id="rental-form">
                         <div class="mb-3">
-                            <label for="start-date" class="form-label">Start Date</label>
+                            <label for="start-date" class="form-label">Fecha de Inicio</label>
                             <input type="date" class="form-control" id="start-date" required>
                         </div>
                         <div class="mb-3">
-                            <label for="end-date" class="form-label">End Date</label>
+                            <label for="end-date" class="form-label">Fecha de Fin</label>
                             <input type="date" class="form-control" id="end-date" required>
                         </div>
                         <div class="mb-3">
-                            <label for="total-cost" class="form-label">Total Cost (USD)</label>
+                            <label for="total-cost" class="form-label">Costo Total (Dolares)</label>
                             <input type="number" class="form-control" id="total-cost" step="0.01" readonly required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Submit Rental</button>
+                        <button type="submit" class="btn btn-primary w-100">Confirmar</button>
                     </form>
                 </div>
             </div>
@@ -127,14 +127,14 @@
             const urlParams = new URLSearchParams(window.location.search);
             const carId = urlParams.get('carId');
             const userId = localStorage.getItem('userId');
-            const pricePerDay = 40; // Set price per day to $100
+            const pricePerDay = 30; // precio por dia a 30$
 
             if (!userId) {
                 showAlert('danger', 'You must be logged in to rent a car.');
                 return;
             }
 
-            // Fetch and display car information
+            // Conseguir los datos del auto
             $.ajax({
                 url: `/carros/${carId}`,
                 method: 'GET',
@@ -150,22 +150,22 @@
                 }
             });
 
-            // Auto calculate total cost based on start and end dates
+            // calcular automaticamente los precios de las fechas seleccionadas
             $('#start-date, #end-date').on('change', function() {
                 const startDate = new Date($('#start-date').val());
                 const endDate = new Date($('#end-date').val());
 
                 if (startDate && endDate && endDate >= startDate) {
                     const timeDiff = Math.abs(endDate - startDate);
-                    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // Calculate number of days
-                    const totalCost = diffDays * pricePerDay; // Calculate total cost
+                    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // calcular numero de dias
+                    const totalCost = diffDays * pricePerDay; // Calcular el costo total
                     $('#total-cost').val(totalCost.toFixed(2));
                 } else {
                     $('#total-cost').val('');
                 }
             });
 
-            // Handle rental form submission
+            // Form de renta
             $('#rental-form').submit(function(event) {
                 event.preventDefault();
                 const startDate = $('#start-date').val();
@@ -187,7 +187,7 @@
                         showAlert('success', 'Rental created successfully!');
                         setTimeout(() => {
                             window.location.href = 'user_account.html';
-                        }, 2000); // Redirect after 2 seconds
+                        }, 1000); // redireccionar a la pagina de usuario para ver la renta 
                     },
                     error: function(xhr, status, error) {
                         showAlert('danger', 'Failed to create rental: ' + xhr.responseText);

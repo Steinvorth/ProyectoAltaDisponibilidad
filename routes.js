@@ -22,7 +22,7 @@ const dbSecondary = mysql.createPool({
 });
 
 // Path to the JSON log file
-const logFilePath = path.join(__dirname, 'db_changes.json');
+const logFilePath = path.join(__dirname, 'HA', 'db_changes.json');
 
 // Function to log queries to JSON file
 function logQuery(query, params) {
@@ -47,7 +47,11 @@ function replayChanges() {
         const logs = JSON.parse(data);
         logs.forEach((log) => {
             dbPrimary.query(log.query, log.params, (err) => {
-                if (err) console.error('Failed to apply logged query:', err);
+                if (err) {
+                    console.error('Failed to apply logged query:', err);
+                } else {
+                    console.log('Successfully replayed query on primary database');
+                }
             });
         });
 
@@ -62,8 +66,8 @@ function replayChanges() {
 function executeQuery(query, params, callback) {
     dbPrimary.query(query, params, (err, results) => {
         if (err) {
-            console.error('Primary DB error:', err.message);
-            console.log('Attempting to connect to the secondary database...');
+            console.error('Primary DB error!');
+            console.log('Connecting to Secondary Database...');
             // Try secondary database if the primary fails
             dbSecondary.query(query, params, (err, results) => {
                 if (err) {
@@ -83,8 +87,8 @@ function executeQuery(query, params, callback) {
 function executeDualWrite(query, params, callback) {
     dbPrimary.query(query, params, (err, results) => {
         if (err) {
-            console.error('Primary DB error:', err.message);
-            logQuery(query, params);
+            console.error('Primary DB error:');
+            logQuery(query, params);  // Log the query if the primary DB is down
             dbSecondary.query(query, params, (err, results) => {
                 if (err) {
                     return callback(err, null);
