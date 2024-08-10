@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Account / Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .link-column {
+            max-width: 150px; /* Adjust the width as needed */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+    
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">User Account</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Back to Main Page</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logout-link">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center" id="account-title">Welcome!</h1>
+
+        <!-- Admin Navigation -->
+        <div id="admin-nav" class="mb-4 d-none text-center">
+            <button class="btn btn-primary" id="manage-users">Manage Users</button>
+            <button class="btn btn-primary" id="manage-cars">Manage Cars</button>
+            <button class="btn btn-primary" id="manage-rentals">Manage Rentals</button>
+        </div>
+
+        <!-- Content Sections -->
+        <div id="users-section" style="display: none;">
+            <h2>Users</h2>
+            <button class="btn btn-success mb-3" id="add-user" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list">
+                        <!-- User rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="cars-section" style="display: none;">
+            <h2>Cars</h2>
+            <button class="btn btn-success mb-3" id="add-car" data-bs-toggle="modal" data-bs-target="#addCarModal">Add Car</button>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Brand</th>
+                            <th>Model</th>
+                            <th>License Plate</th>
+                            <th>State</th>
+                            <th>Details</th>
+                            <th class="link-column">Image URL</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="car-list">
+                        <!-- Car rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div id="rentals-section">
+            <h2 id="rentals-title">Your Rentals</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead id="rentals-header">
+                        <tr>
+                            <th>#</th>
+                            <th id="user-column" style="display:none;">User</th>
+                            <th>Car</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Total Cost</th>
+                            <th id="actions-column" style="display:none;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rental-list">
+                        <!-- Rental rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Form fields for editing -->
+                    <form id="editForm">
+                        <input type="hidden" id="editEntryId">
+                        <div class="mb-3">
+                            <label for="editField1" class="form-label">Field 1</label>
+                            <input type="text" class="form-control" id="editField1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editField2" class="form-label">Field 2</label>
+                            <input type="text" class="form-control" id="editField2">
+                        </div>
+                        <div id="additionalFields"></div>
+                        <!-- Add more fields as needed -->
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this entry?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <label for="newUsername" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="newUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newFirstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="newFirstName">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newLastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="newLastName">
+                        </div>
+                        <button type="submit" class="btn btn-success">Add User</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Car Modal -->
+    <div class="modal fade" id="addCarModal" tabindex="-1" aria-labelledby="addCarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCarModalLabel">Add Car</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCarForm">
+                        <div class="mb-3">
+                            <label for="newBrand" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="newBrand" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newModel" class="form-label">Model</label>
+                            <input type="text" class="form-control" id="newModel" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPlate" class="form-label">License Plate</label>
+                            <input type="text" class="form-control" id="newPlate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newState" class="form-label">State</label>
+                            <select class="form-control" id="newState" required>
+                                <!-- Options will be dynamically populated -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newImageUrl" class="form-label">Image URL</label>
+                            <input type="text" class="form-control" id="newImageUrl">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDetails" class="form-label">Details</label>
+                            <textarea class="form-control" id="newDetails"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Car</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            const userId = localStorage.getItem('userId');
+            console.log(userId);
+            let currentTable = 'rentals'; // Default to rentals
+
+            if (!userId) {
+                showAlert('You must be logged in to view your account.', 'danger');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            $('#logout-link').click(function() {
+                localStorage.removeItem('userId');
+                window.location.href = 'index.html';
+            });
+
+            if (userId == 1) {
+                // Admin privileges
+                $('#account-title').text('Admin Panel');
+                $('#admin-nav').removeClass('d-none');
+                $('#rentals-title').text('All User Rentals');
+                $('#user-column').show();
+                $('#actions-column').show();
+
+                // Admin navigation handlers
+                $('#manage-users').click(function() {
+                    $('#users-section').show();
+                    $('#cars-section').hide();
+                    $('#rentals-section').hide();
+                    fetchAdminData('users');
+                });
+
+                $('#manage-cars').click(function() {
+                    $('#users-section').hide();
+                    $('#cars-section').show();
+                    $('#rentals-section').hide();
+                    fetchAdminData('cars');
+                });
+
+                $('#manage-rentals').click(function() {
+                    $('#users-section').hide();
+                    $('#cars-section').hide();
+                    $('#rentals-section').show();
+                    fetchAdminData('rentals');
+                });
+
+                fetchAdminData(currentTable); // Fetch rentals by default
+
+                function fetchAdminData(table) {
+                    let url = '';
+                    if (table === 'users') {
+                        url = '/admin/users';
+                    } else if (table === 'cars') {
+                        url = '/admin/cars';
+                    } else {
+                        url = '/admin/rentals';
+                    }
+
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        success: function(data) {
+                            populateTable(data, table);
+                        },
+                        error: function(xhr, status, error) {
+                            showAlert(`Failed to fetch ${table} data: ${xhr.responseText}`, 'danger');
+                        }
+                    });
+                }
+
+                function populateTable(data, table) {
+                    let list = $('#rental-list');
+                    if (table === 'users') {
+                        list = $('#user-list');
+                    } else if (table === 'cars') {
+                        list = $('#car-list');
+                    }
+                    list.empty();
+
+                    if (data.length === 0) {
+                        list.append('<tr><td colspan="5" class="text-center">No entries found</td></tr>');
+                    } else {
+                        data.forEach((entry, index) => {
+                            let row = '';
+                            if (table === 'users') {
+                                row = `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${entry.Username}</td>
+                                        <td>${entry.Email}</td>
+                                        <td>${entry.Nombre || 'null'}</td>
+                                        <td>${entry.Apellido || 'null'}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm edit-entry" data-id="${entry.ID}" data-table="users">Edit</button>
+                                            <button class="btn btn-danger btn-sm delete-entry" data-id="${entry.ID}" data-table="users">Delete</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            } else if (table === 'cars') {
+                                row = `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${entry.Marca}</td>
+                                        <td>${entry.Modelo}</td>
+                                        <td>${entry.Placa}</td>
+                                        <td>${entry.Estado || 'undefined'}</td>
+                                        <td>${entry.DetalleEstado || ''}</td>
+                                        <td class="link-column">${entry.ImagenURL || ''}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm edit-entry" data-id="${entry.ID}" data-table="cars">Edit</button>
+                                            <button class="btn btn-danger btn-sm delete-entry" data-id="${entry.ID}" data-table="cars">Delete</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            } else {
+                                row = `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${entry.Username}</td>
+                                        <td>${entry.Marca} ${entry.Modelo}</td>
+                                        <td>${new Date(entry.ComienzoRenta).toLocaleDateString()}</td>
+                                        <td>${entry.FinalRenta ? new Date(entry.FinalRenta).toLocaleDateString() : 'Ongoing'}</td>
+                                        <td>${parseFloat(entry.CostoTotal).toFixed(2)} USD</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm edit-entry" data-id="${entry.ID}" data-table="rentals">Edit</button>
+                                            <button class="btn btn-danger btn-sm delete-entry" data-id="${entry.ID}" data-table="rentals">Delete</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                            list.append(row);
+                        });
+                    }
+
+                    // Attach event listeners for edit and delete buttons
+                    $('.edit-entry').click(function() {
+                        const id = $(this).data('id');
+                        const table = $(this).data('table');
+                        openEditModal(id, table);
+                    });
+
+                    $('.delete-entry').click(function() {
+                        const id = $(this).data('id');
+                        const table = $(this).data('table');
+                        openDeleteModal(id, table);
+                    });
+                }
+
+                function openEditModal(id, table) {
+                    // Fetch the entry data and populate the modal fields
+                    let url = '';
+                    if (table === 'users') {
+                        url = `/usuarios/${id}`;
+                    } else if (table === 'cars') {
+                        url = `/carros/${id}`;
+                    } else {
+                        url = `/rentals/${id}`;
+                    }
+
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        success: function(data) {
+                            $('#editModal').modal('show');
+                            $('#editEntryId').val(id);
+                            $('#editField1').val(data.Marca || data.Username || data.ComienzoRenta);
+                            $('#editField2').val(data.Modelo || data.Email || data.FinalRenta);
+                            
+                            if (table === 'cars') {
+                                $('#additionalFields').html(`
+                                    <div class="mb-3">
+                                        <label for="editPlaca" class="form-label">License Plate</label>
+                                        <input type="text" class="form-control" id="editPlaca" value="${data.Placa || ''}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editState" class="form-label">State</label>
+                                        <select class="form-control" id="editState" required>
+                                            <!-- Options will be dynamically populated -->
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editDetails" class="form-label">Details</label>
+                                        <textarea class="form-control" id="editDetails">${data.DetalleEstado || ''}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editImageURL" class="form-label">Image URL</label>
+                                        <input type="text" class="form-control" id="editImageURL" value="${data.ImagenURL || ''}">
+                                    </div>
+                                `);
+
+                                // Populate the state dropdown
+                                populateStateDropdown('#editState', data.id_disponibilidad);
+
+                            } else if (table === 'users') {
+                                $('#additionalFields').html(`
+                                    <div class="mb-3">
+                                        <label for="editFirstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="editFirstName" value="${data.Nombre || ''}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editLastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="editLastName" value="${data.Apellido || ''}">
+                                    </div>
+                                `);
+                            } else if (table === 'rentals') {
+                                $('#additionalFields').html(`
+                                    <div class="mb-3">
+                                        <label for="editCost" class="form-label">Total Cost</label>
+                                        <input type="text" class="form-control" id="editCost" value="${data.CostoTotal || ''}">
+                                    </div>
+                                `);
+                            }
+
+                            // Handle form submission
+                            $('#editForm').off('submit').on('submit', function(event) {
+                                event.preventDefault();
+                                saveChanges(id, table);
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            showAlert(`Failed to fetch entry data: ${xhr.responseText}`, 'danger');
+                        }
+                    });
+                }
+
+
+                function saveChanges(id, table) {
+                    let url = '';
+                    let data = {};
+
+                    if (table === 'users') {
+                        url = `/usuarios/${id}`;
+                        data = {
+                            Username: $('#editField1').val(),
+                            Email: $('#editField2').val(),
+                            Nombre: $('#editFirstName').val(),
+                            Apellido: $('#editLastName').val(),
+                        };
+                    } else if (table === 'cars') {
+                        url = `/carros/${id}`;
+                        data = {
+                            Marca: $('#editField1').val(),
+                            Modelo: $('#editField2').val(),
+                            Placa: $('#editPlaca').val(),
+                            id_disponibilidad: $('#editState').val(),
+                            DetalleEstado: $('#editDetails').val(),
+                            ImagenURL: $('#editImageURL').val(),
+                        };
+                    } else if (table === 'rentals') {
+                        url = `/rentals/${id}`;
+                        data = {
+                            ComienzoRenta: $('#editField1').val(),
+                            FinalRenta: $('#editField2').val(),
+                            CostoTotal: $('#editCost').val(),
+                        };
+                    }
+
+                    $.ajax({
+                        url: url,
+                        method: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            $('#editModal').modal('hide');
+                            showAlert('Entry updated successfully!', 'success');
+                            fetchAdminData(table);
+                        },
+                        error: function(xhr, status, error) {
+                            showAlert(`Failed to update entry: ${xhr.responseText}`, 'danger');
+                        }
+                    });
+                }
+
+
+                function openDeleteModal(id, table) {
+                    $('#deleteModal').modal('show');
+                    $('#confirmDelete').off('click').on('click', function() {
+                        deleteEntry(id, table);
+                    });
+                }
+
+                function deleteEntry(id, table) {
+                    let url = '';
+                    if (table === 'users') {
+                        url = `/usuarios/${id}`;
+                    } else if (table === 'cars') {
+                        url = `/carros/${id}`;
+                    } else {
+                        url = `/rentals/${id}`;
+                    }
+
+                    $.ajax({
+                        url: url,
+                        method: 'DELETE',
+                        success: function(response) {
+                            $('#deleteModal').modal('hide');
+                            showAlert('Entry deleted successfully!', 'success');
+                            fetchAdminData(table);
+                        },
+                        error: function(xhr, status, error) {
+                            showAlert(`Failed to delete entry: ${xhr.responseText}`, 'danger');
+                        }
+                    });
+                }
+
+            } else {
+                // Fetch rentals for regular user
+                $('#rentals-section').show();
+                $('#user-column').hide();
+                $('#actions-column').hide();
+                fetchRentalsForUser(userId);
+            }
+
+            function fetchRentalsForUser(userId) {
+                $.ajax({
+                    url: `/rentals/${userId}`,
+                    method: 'GET',
+                    success: function(data) {
+                        const rentalList = $('#rental-list');
+                        rentalList.empty();
+
+                        if (data.length === 0) {
+                            rentalList.append('<tr><td colspan="5" class="text-center">No rentals found</td></tr>');
+                        } else {
+                            data.forEach((rental, index) => {
+                                rentalList.append(`
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${rental.Marca} ${rental.Modelo}</td>
+                                        <td>${new Date(rental.ComienzoRenta).toLocaleDateString()}</td>
+                                        <td>${rental.FinalRenta ? new Date(rental.FinalRenta).toLocaleDateString() : 'Ongoing'}</td>
+                                        <td>${parseFloat(rental.CostoTotal).toFixed(2)} USD</td>
+                                    </tr>
+                                `);
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showAlert('Failed to fetch rentals: ' + xhr.responseText, 'danger');
+                    }
+                });
+            }
+
+            // Handle Add User Form submission
+            $('#addUserForm').submit(function(event) {
+                event.preventDefault();
+
+                const newUser = {
+                    Username: $('#newUsername').val(),
+                    Password: $('#newPassword').val(),
+                    Email: $('#newEmail').val(),
+                    Nombre: $('#newFirstName').val(),
+                    Apellido: $('#newLastName').val(),
+                };
+
+                $.ajax({
+                    url: '/admin/users',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(newUser),
+                    success: function(response) {
+                        $('#addUserModal').modal('hide');
+                        showAlert('User added successfully!', 'success');
+                        fetchAdminData('users');
+                    },
+                    error: function(xhr, status, error) {
+                        showAlert('Failed to add user: ' + xhr.responseText, 'danger');
+                    }
+                });
+            });
+
+            // Handle Add Car Form submission
+            $('#addCarForm').submit(function(event) {
+                event.preventDefault();
+
+                const newCar = {
+                    Marca: $('#newBrand').val(),
+                    Modelo: $('#newModel').val(),
+                    Placa: $('#newPlate').val(),
+                    id_disponibilidad: $('#newState').val(),
+                    ImagenURL: $('#newImageUrl').val(),
+                    DetalleEstado: $('#newDetails').val(),
+                };
+
+                $.ajax({
+                    url: '/admin/cars',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(newCar),
+                    success: function(response) {
+                        $('#addCarModal').modal('hide');
+                        showAlert('Car added successfully!', 'success');
+                        fetchAdminData('cars');
+                    },
+                    error: function(xhr, status, error) {
+                        showAlert('Failed to add car: ' + xhr.responseText, 'danger');
+                    }
+                });
+            });
+
+            function populateStateDropdown(selector, selectedId = null) {
+                $.ajax({
+                    url: '/availability',  // Ensure you have a route to get the availability statuses
+                    method: 'GET',
+                    success: function(data) {
+                        const dropdown = $(selector);
+                        dropdown.empty();
+                        data.forEach(status => {
+                            const isSelected = status.LogID == selectedId ? 'selected' : '';
+                            dropdown.append(`<option value="${status.LogID}" ${isSelected}>${status.Estado}</option>`);
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to fetch availability statuses:', xhr.responseText);
+                    }
+                });
+            }
+
+// Populate the dropdown when the add car modal is shown
+$('#addCarModal').on('show.bs.modal', function() {
+    populateStateDropdown('#newState');
+});
+
+
+            // Function to show Bootstrap alerts
+            function showAlert(message, type) {
+                const alertBox = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                                    ${message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                  </div>`;
+                $('body').prepend(alertBox);
+                setTimeout(() => {
+                    $('.alert').alert('close');
+                }, 5000);
+            }
+        });
+    </script>
+
+</body>
+</html>
