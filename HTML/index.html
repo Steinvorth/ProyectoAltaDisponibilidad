@@ -22,6 +22,15 @@
         .status-maintenance {
             background-color: gray;
         }
+        .disabled-btn {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        /* Ensure all images have the same height */
+        .card-img-top {
+            height: 200px; /* Set the desired height */
+            object-fit: cover; /* Scale the image to cover the entire container while maintaining aspect ratio */
+        }
     </style>
 </head>
 <body>
@@ -59,7 +68,7 @@
 
     <script>
         $(document).ready(function() {
-            // Vemossi hay un usuario logueado
+            // Verificar si hay un usuario logueado
             const userId = localStorage.getItem('userId');
 
             if (userId) {
@@ -73,7 +82,7 @@
             });
 
             $.ajax({
-                url: '/carros', // rutapara obtener la lista de carros disponibles
+                url: '/carros', // ruta para obtener la lista de carros disponibles
                 method: 'GET',
                 success: function(data) {
                     const carList = $('#car-list');
@@ -81,23 +90,30 @@
                     data.forEach(car => {
                         let statusClass = '';
                         let statusText = '';
+                        let buttonDisabled = '';
+                        let popoverText = '';
 
                         switch (car.Estado) {
                             case 'Disponible':
                                 statusClass = 'status-available';
-                                statusText = 'Available';
+                                statusText = 'Disponible';
+                                buttonDisabled = ''; // Button is active
                                 break;
                             case 'No Disponible':
                                 statusClass = 'status-unavailable';
-                                statusText = 'Not Available';
+                                statusText = 'No Disponible';
+                                buttonDisabled = 'disabled-btn';
+                                popoverText = 'El carro no está disponible en este momento.';
                                 break;
                             case 'Mantenimiento':
                                 statusClass = 'status-maintenance';
-                                statusText = 'In Maintenance';
+                                statusText = 'En Mantenimiento';
+                                buttonDisabled = 'disabled-btn';
+                                popoverText = 'El carro no está disponible en este momento.';
                                 break;
                             default:
-                                statusClass = 'status-available'; // El default por si acaso
-                                statusText = 'Available';
+                                statusClass = 'status-available'; // Default case
+                                statusText = 'Disponible';
                         }
 
                         carList.append(`
@@ -108,12 +124,22 @@
                                         <h5 class="card-title">${car.Marca} ${car.Modelo}</h5>
                                         <p class="card-text">${car.DetalleEstado}</p>
                                         <p class="card-text"><span class="status-circle ${statusClass}"></span><strong>${statusText}</strong></p>
-                                        <a href="rent_action.html?carId=${car.ID}" class="btn btn-primary">Alquilar</a>
+                                        <a href="rent_action.html?carId=${car.ID}" 
+                                           class="btn btn-primary ${buttonDisabled}" 
+                                           data-bs-toggle="${buttonDisabled ? 'popover' : ''}" 
+                                           data-bs-content="${popoverText}">
+                                           Alquilar
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         `);
 
+                        // Initialize popovers
+                        $('[data-bs-toggle="popover"]').popover({
+                            trigger: 'hover',
+                            placement: 'top'
+                        });
                     });
                 },
                 error: function(error) {
