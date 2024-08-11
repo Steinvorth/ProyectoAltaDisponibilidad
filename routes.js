@@ -4,7 +4,7 @@ const mysql = require('mysql2');
 const fs = require('fs');
 const path = require('path');
 
-// Create MySQL connection pools for both primary and secondary databases
+// Coneccion a la db principal
 const dbPrimary = mysql.createPool({
     host: 'localhost',
     user: 'root',
@@ -13,6 +13,7 @@ const dbPrimary = mysql.createPool({
     port: 3306
 });
 
+// Coneccion a la db secundaria
 const dbSecondary = mysql.createPool({
     host: 'localhost',
     user: 'root',
@@ -21,10 +22,10 @@ const dbSecondary = mysql.createPool({
     port: 3307
 });
 
-// Path to the JSON log file
+// Este JSON servira para poder subir los datos de la DB secundaria a la principal cuando vuelva a estar en linea
 const logFilePath = path.join(__dirname, 'HA', 'db_changes.json');
 
-// Function to log queries to JSON file
+// Funcion para agregar un registro al archivo de json con los datos de cada query mientras la db principal esta caida
 function logQuery(query, params) {
     const logEntry = { query, params };
     fs.readFile(logFilePath, (err, data) => {
@@ -34,12 +35,12 @@ function logQuery(query, params) {
         }
         logs.push(logEntry);
         fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), (err) => {
-            if (err) console.error('Failed to log query:', err);
+            if (err) console.error('Error al guardar el query:', err);
         });
     });
 }
 
-// Function to replay logged queries to the primary database
+// Funcion para ingresar los datos del json a la base de datos principal
 function replayChanges() {
     fs.readFile(logFilePath, (err, data) => {
         if (err || data.length === 0) return;
@@ -48,30 +49,31 @@ function replayChanges() {
         logs.forEach((log) => {
             dbPrimary.query(log.query, log.params, (err) => {
                 if (err) {
-                    console.error('Failed to apply logged query:', err);
+                    console.error('No se pudo aplicar los cambios al achivo JSON:', err);
                 } else {
-                    console.log('Successfully replayed query on primary database');
+                    console.log('Cambios aplicados correctamente a la base de datos principal');
                 }
             });
         });
 
-        // Clear the log file after replaying
+        // Limpiar el json cuando se aplican los cambios a la db principal
         fs.writeFile(logFilePath, '[]', (err) => {
-            if (err) console.error('Failed to clear log file:', err);
+            if (err) console.error('Error al limpiar el JSON:', err);
         });
     });
 }
 
-// Function to execute a query with failover logic
+// Funcion par ejecutar query en la base de datos principal y guardar los cambios si falla
 function executeQuery(query, params, callback) {
     dbPrimary.query(query, params, (err, results) => {
         if (err) {
-            console.error('Primary DB error!');
-            console.log('Connecting to Secondary Database...');
-            // Try secondary database if the primary fails
+            console.error('Error en la DB Principal!');
+            console.log('Usando la segunda DB...');
+
+            //probar db secundaria
             dbSecondary.query(query, params, (err, results) => {
                 if (err) {
-                    console.error('Secondary DB error:', err.message);
+                    console.error('Error con DB Secundaria:', err.message);
                     return callback(err, null);
                 } else {
                     return callback(null, results);
@@ -83,12 +85,12 @@ function executeQuery(query, params, callback) {
     });
 }
 
-// Function to execute a dual-write query for INSERT, UPDATE, DELETE operations
+// Funcion para ejecutar INSERT, UPDATE y DELETE queries en ambas bases de datos
 function executeDualWrite(query, params, callback) {
     dbPrimary.query(query, params, (err, results) => {
         if (err) {
-            console.error('Primary DB error:');
-            logQuery(query, params);  // Log the query if the primary DB is down
+            console.error('Error en DB principal:');
+            logQuery(query, params);  // agregar el query en el JSON si esta caida la DB principal
             dbSecondary.query(query, params, (err, results) => {
                 if (err) {
                     return callback(err, null);
@@ -98,7 +100,7 @@ function executeDualWrite(query, params, callback) {
         } else {
             dbSecondary.query(query, params, (err) => {
                 if (err) {
-                    console.error('Secondary DB replication error:', err.message);
+                    console.error('Error replicando datos en la DB Secundaria:', err.message);
                 }
             });
             return callback(null, results);
@@ -106,10 +108,10 @@ function executeDualWrite(query, params, callback) {
     });
 }
 
-// Replay any pending changes to the primary database when the server starts
+// Actualizar db principal con los cambios del JSON.
 replayChanges();
 
-// Route to get all cars with availability status
+// Ruta para conseguir todos los carros
 router.get('/carros', (req, res) => {
     const query = `
         SELECT Carros.ID, Carros.Marca, Carros.Modelo, Carros.Placa, 
@@ -120,13 +122,13 @@ router.get('/carros', (req, res) => {
     `;
     executeQuery(query, [], (err, results) => {
         if (err) {
-            return res.status(500).send('Error fetching car data');
+            return res.status(500).send('Error');
         }
         res.json(results);
     });
 });
 
-// Route to get a specific car by ID with availability status
+// Ruta para conseguir un carro especifico
 router.get('/carros/:id', (req, res) => {
     const query = `
         SELECT Carros.*, IFNULL(Disponibilidad.Estado, 'Not Available') AS Estado 
@@ -137,43 +139,43 @@ router.get('/carros/:id', (req, res) => {
     const carId = req.params.id;
     executeQuery(query, [carId], (err, results) => {
         if (err) {
-            return res.status(500).send('Error fetching car data');
+            return res.status(500).send('Error');
         }
         res.json(results[0]);
     });
 });
 
-// Route to create a new user
+// Ruta para crear un usuario
 router.post('/usuarios', (req, res) => {
     const { Username, Password, Email, Nombre, Apellido } = req.body;
     const query = 'INSERT INTO Usuarios (Username, Password, Email, Nombre, Apellido) VALUES (?, ?, ?, ?, ?)';
     executeDualWrite(query, [Username, Password, Email, Nombre, Apellido], (err, results) => {
         if (err) {
-            return res.status(500).send('Error creating user');
+            return res.status(500).send('Error');
         }
         res.status(201).send('Usuario creado con éxito');
     });
 });
 
-// Route to authenticate a user
+// Rita para autenticar usuario en login
 router.post('/login', (req, res) => {
     const { Username, Password } = req.body;
     const query = 'SELECT * FROM Usuarios WHERE Username = ? AND Password = ?';
 
     executeQuery(query, [Username, Password], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error during login' });
+            return res.status(500).json({ message: 'Error' });
         }
 
         if (results.length > 0) {
-            return res.json({ message: 'Login successful', userId: results[0].ID });
+            return res.json({ message: 'Login Exitoso', userId: results[0].ID }); //return el ID para luego poder usarlo para el local session storage
         } else {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Credenciales Invalidas' });
         }
     });
 });
 
-// Route to get all rentals for a specific user
+// Tura para conseguir las rentas de un usuario especifico
 router.get('/rentals/:userId', (req, res) => {
     const userId = req.params.userId;
     const query = `
@@ -184,48 +186,48 @@ router.get('/rentals/:userId', (req, res) => {
     `;
     executeQuery(query, [userId], (err, results) => {
         if (err) {
-            return res.status(500).send('Error fetching rentals');
+            return res.status(500).send('Error');
         }
         res.json(results);
     });
 });
 
-// Route to get user information by ID
+// Ruta para conseguir los datos de un usuario
 router.get('/users/:id', (req, res) => {
     const userId = req.params.id;
     const query = 'SELECT ID, Username, Email, Nombre, Apellido FROM Usuarios WHERE ID = ?';
     executeQuery(query, [userId], (err, results) => {
         if (err) {
-            return res.status(500).send('Error fetching user info');
+            return res.status(500).send('Error');
         }
         res.json(results[0]);
     });
 });
 
-// Route to create a new rental
+// Ruta para insertar una renta nueva
 router.post('/rentals', (req, res) => {
     const { id_usuario, id_carro, ComienzoRenta, FinalRenta, CostoTotal } = req.body;
     const query = 'INSERT INTO Rentas (id_usuario, id_carro, ComienzoRenta, FinalRenta, CostoTotal) VALUES (?, ?, ?, ?, ?)';
     executeDualWrite(query, [id_usuario, id_carro, ComienzoRenta, FinalRenta, CostoTotal], (err, results) => {
         if (err) {
-            return res.status(500).send('Error creating rental');
+            return res.status(500).send('Error');
         }
-        res.status(201).send('Rental created successfully');
+        res.status(201).send('Renta Exitosa');
     });
 });
 
-// Route to get all users (Admin only)
+// Ruta para conseguir todos los usuarios (Admin)
 router.get('/admin/users', (req, res) => {
     const query = 'SELECT ID, Username, Email, Nombre, Apellido FROM Usuarios';
     executeQuery(query, [], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Error fetching users' });
+            return res.status(500).json({ error: 'Error' });
         }
         res.json(results);
     });
 });
 
-// Route to get all cars (Admin only)
+// Rua pra conseguir todos los carros (Admin)
 router.get('/admin/cars', (req, res) => {
     const query = `
         SELECT Carros.ID, Carros.Marca, Carros.Modelo, Carros.Placa, 
@@ -236,13 +238,13 @@ router.get('/admin/cars', (req, res) => {
     `;
     executeQuery(query, [], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Error fetching cars' });
+            return res.status(500).json({ error: 'Error' });
         }
         res.json(results);
     });
 });
 
-// Route to get all rentals (Admin only)
+// Route para conseguir todas las rentas (Admin)
 router.get('/admin/rentals', (req, res) => {
     const query = `
         SELECT Rentas.*, Carros.Marca, Carros.Modelo, Usuarios.Username 
@@ -252,50 +254,50 @@ router.get('/admin/rentals', (req, res) => {
     `;
     executeQuery(query, [], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Error fetching rentals' });
+            return res.status(500).json({ error: 'Error' });
         }
         res.json(results);
     });
 });
 
-// Fetch a specific user by ID
+// Conseguir un usuario basado en su ID
 router.get('/usuarios/:id', (req, res) => {
     const userId = req.params.id;
     const query = 'SELECT ID, Username, Email, Nombre, Apellido FROM Usuarios WHERE ID = ?';
     executeQuery(query, [userId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error fetching user' });
+            return res.status(500).json({ message: 'Error' });
         }
         res.json(results[0]);
     });
 });
 
-// Update a specific user by ID
+// Actualizar usuario por ID
 router.put('/usuarios/:id', (req, res) => {
     const userId = req.params.id;
     const { Username, Email, Nombre, Apellido } = req.body;
     const query = 'UPDATE Usuarios SET Username = ?, Email = ?, Nombre = ?, Apellido = ? WHERE ID = ?';
     executeDualWrite(query, [Username, Email, Nombre, Apellido, userId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error updating user' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.json({ message: 'User updated successfully' });
+        res.json({ message: 'Actualizado Exitosamente' });
     });
 });
 
-// Delete a specific user by ID
+// Borrar Usuario Especifico
 router.delete('/usuarios/:id', (req, res) => {
     const userId = req.params.id;
     const query = 'DELETE FROM Usuarios WHERE ID = ?';
     executeDualWrite(query, [userId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error deleting user' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.json({ message: 'User deleted successfully' });
+        res.json({ message: 'Usuario Eliminado Exitosamente.' });
     });
 });
 
-// Fetch a specific car by ID
+// Buscar un carro por ID
 router.get('/carros/:id', (req, res) => {
     const carId = req.params.id;
     const query = `
@@ -306,38 +308,38 @@ router.get('/carros/:id', (req, res) => {
     `;
     executeQuery(query, [carId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error fetching car' });
+            return res.status(500).json({ message: 'Error' });
         }
         res.json(results[0]);
     });
 });
 
-// Update a specific car by ID
+// Actualizar Carro Especifico
 router.put('/carros/:id', (req, res) => {
     const carId = req.params.id;
     const { Marca, Modelo, Placa, id_disponibilidad, DetalleEstado, ImagenURL } = req.body;
     const query = 'UPDATE Carros SET Marca = ?, Modelo = ?, Placa = ?, id_disponibilidad = ?, DetalleEstado = ?, ImagenURL = ? WHERE ID = ?';
     executeDualWrite(query, [Marca, Modelo, Placa, id_disponibilidad, DetalleEstado, ImagenURL, carId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error updating car' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.json({ message: 'Car updated successfully' });
+        res.json({ message: 'Car Actualizado Exitosamente' });
     });
 });
 
-// Delete a specific car by ID
+// Borrar un Carro
 router.delete('/carros/:id', (req, res) => {
     const carId = req.params.id;
     const query = 'DELETE FROM Carros WHERE ID = ?';
     executeDualWrite(query, [carId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error deleting car' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.json({ message: 'Car deleted successfully' });
+        res.json({ message: 'Carro Eliminado Exitosamente' });
     });
 });
 
-// Fetch a specific rental by ID
+// Conseguir una renta especifica
 router.get('/rentals/:id', (req, res) => {
     const rentalId = req.params.id;
     const query = `
@@ -349,13 +351,13 @@ router.get('/rentals/:id', (req, res) => {
     `;
     executeQuery(query, [rentalId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error fetching rental' });
+            return res.status(500).json({ message: 'Error' });
         }
         res.json(results[0]);
     });
 });
 
-// Update a specific rental by ID
+// Actualiar renta especifica
 router.put('/rentals/:id', (req, res) => {
     const rentalId = req.params.id;
     const { id_usuario, id_carro, ComienzoRenta, FinalRenta, CostoTotal } = req.body;
@@ -366,54 +368,54 @@ router.put('/rentals/:id', (req, res) => {
     `;
     executeDualWrite(query, [id_usuario, id_carro, ComienzoRenta, FinalRenta, CostoTotal, rentalId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error updating rental' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.json({ message: 'Rental updated successfully' });
+        res.json({ message: 'Renta Actualizada Exitosamente' });
     });
 });
 
-// Delete a specific rental by ID
+// Borrar renta 
 router.delete('/rentals/:id', (req, res) => {
     const rentalId = req.params.id;
     const query = 'DELETE FROM Rentas WHERE ID = ?';
     executeDualWrite(query, [rentalId], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error deleting rental' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.json({ message: 'Rental deleted successfully' });
+        res.json({ message: 'Renta Elminadad Exitosamente' });
     });
 });
 
-// Add a new user
+// Agregar Usuario nuevo desde Admin
 router.post('/admin/users', (req, res) => {
     const { Username, Password, Email, Nombre, Apellido } = req.body;
     const query = 'INSERT INTO Usuarios (Username, Password, Email, Nombre, Apellido) VALUES (?, ?, ?, ?, ?)';
     executeDualWrite(query, [Username, Password, Email, Nombre, Apellido], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error adding user' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.status(201).json({ message: 'User added successfully!' });
+        res.status(201).json({ message: 'Usuario Agregado Exitosamente!' });
     });
 });
 
-// Add a new car
+// Agregar Vehiculo nuevo desde Admin
 router.post('/admin/cars', (req, res) => {
     const { Marca, Modelo, Placa, id_disponibilidad, ImagenURL, DetalleEstado } = req.body;
     const query = 'INSERT INTO Carros (Marca, Modelo, Placa, id_disponibilidad, ImagenURL, DetalleEstado) VALUES (?, ?, ?, ?, ?, ?)';
     executeDualWrite(query, [Marca, Modelo, Placa, id_disponibilidad, ImagenURL, DetalleEstado], (err, results) => {
         if (err) {
-            return res.status(500).json({ message: 'Error adding car' });
+            return res.status(500).json({ message: 'Error' });
         }
-        res.status(201).json({ message: 'Car added successfully!' });
+        res.status(201).json({ message: 'Carro Agregado Exitosamente!' });
     });
 });
 
-// Route to get all availability statuses
+// Ruta para conseguir los estados de los vehiculos
 router.get('/availability', (req, res) => {
     const query = 'SELECT * FROM Disponibilidad';
     executeQuery(query, [], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: 'Error fetching availability statuses' });
+            return res.status(500).json({ error: 'Error' });
         }
         res.json(results);
     });
