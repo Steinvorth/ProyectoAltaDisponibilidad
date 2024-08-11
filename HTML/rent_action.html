@@ -130,7 +130,7 @@
             const pricePerDay = 30; // precio por dia a 30$
 
             if (!userId) {
-                showAlert('danger', 'You must be logged in to rent a car.');
+                showAlert('danger', 'Debe tener una cuenta para rentar el auto!');
                 return;
             }
 
@@ -146,7 +146,7 @@
                     $('#car-image').attr('src', car.ImagenURL);
                 },
                 error: function(xhr, status, error) {
-                    showAlert('danger', 'Failed to fetch car information: ' + xhr.responseText);
+                    showAlert('danger', 'Error: ' + xhr.responseText);
                 }
             });
 
@@ -184,13 +184,13 @@
                         CostoTotal: totalCost
                     }),
                     success: function(response) {
-                        showAlert('success', 'Rental created successfully!');
+                        showAlert('success', 'Se ha rentado exitosamente!');
                         setTimeout(() => {
                             window.location.href = 'user_account.html';
                         }, 1000); // redireccionar a la pagina de usuario para ver la renta 
                     },
                     error: function(xhr, status, error) {
-                        showAlert('danger', 'Failed to create rental: ' + xhr.responseText);
+                        showAlert('danger', 'Error: ' + xhr.responseText);
                     }
                 });
             });

@@ -48,19 +48,19 @@
 
     <script>
         $(document).ready(function() {
-            // Attempt to replay changes to the primary database each time the document loads
+            // Intentar de replicar datos a la DB primaria cada vez que el documento carga
             $.ajax({
                 url: '/replay-changes',
                 method: 'POST',
                 success: function(response) {
-                    console.log('Changes have been synced with the primary database.');
+                    console.log('Cambios hechos a la base de datos primaria.');
                 },
                 error: function(xhr, status, error) {
-                    console.log('Error syncing changes: ' + xhr.responseText);
+                    console.log('Error sincronizando cambios: ' + xhr.responseText);
                 }
             });
 
-            // Check if a user is logged in
+            // Verificar si hay un usuario logueado
             const userId = localStorage.getItem('userId');
             if (userId) {
                 $('#account-link').text('Cuenta').attr('href', 'user_account.html');
@@ -72,13 +72,13 @@
                 window.location.href = 'index.html';
             });
 
-            // Fetch available cars
+            // Obtener la lista de carros disponibles
             $.ajax({
-                url: '/carros',
+                url: '/carros', // Ruta para obtener la lista de carros disponibles
                 method: 'GET',
                 success: function(data) {
                     const carList = $('#car-list');
-                    carList.empty(); // Clear the existing content
+                    carList.empty(); // Borrar el contenido actual de la lista
                     data.forEach(car => {
                         let statusClass = '';
                         let statusText = '';
@@ -89,7 +89,7 @@
                             case 'Disponible':
                                 statusClass = 'status-available';
                                 statusText = 'Disponible';
-                                buttonDisabled = ''; // Button is active
+                                buttonDisabled = ''; // El botón está activo
                                 break;
                             case 'No Disponible':
                                 statusClass = 'status-unavailable';
@@ -104,7 +104,7 @@
                                 popoverText = 'El carro no está disponible en este momento.';
                                 break;
                             default:
-                                statusClass = 'status-available'; // Default case
+                                statusClass = 'status-available'; // Caso por defecto
                                 statusText = 'Disponible';
                         }
 
@@ -127,7 +127,7 @@
                             </div>
                         `);
 
-                        // Initialize popovers
+                        // Inicializar popovers
                         $('[data-bs-toggle="popover"]').popover({
                             trigger: 'hover',
                             placement: 'top'
@@ -135,7 +135,7 @@
                     });
                 },
                 error: function(error) {
-                    console.error('Error fetching car data:', error);
+                    console.error('Error obteniendo datos de los carros:', error);
                 }
             });
         });
