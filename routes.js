@@ -49,16 +49,16 @@ function replayChanges() {
         logs.forEach((log) => {
             dbPrimary.query(log.query, log.params, (err) => {
                 if (err) {
-                    console.error('No se pudo aplicar los cambios al achivo JSON:', err);
+                    console.error('Could not apply changes from JSON to the primary DB:', err);
                 } else {
-                    console.log('Cambios aplicados correctamente a la base de datos principal');
+                    console.log('Changes successfully applied to the primary database');
                 }
             });
         });
 
-        // Limpiar el json cuando se aplican los cambios a la db principal
+        // Clear the JSON file once changes are applied
         fs.writeFile(logFilePath, '[]', (err) => {
-            if (err) console.error('Error al limpiar el JSON:', err);
+            if (err) console.error('Error clearing the JSON file:', err);
         });
     });
 }
@@ -108,8 +108,11 @@ function executeDualWrite(query, params, callback) {
     });
 }
 
-// Actualizar db principal con los cambios del JSON.
-replayChanges();
+// Trigger para replicar los cambios
+router.post('/replay-changes', (req, res) => {
+    replayChanges();
+    res.status(200).send('Replayed changes to the primary database');
+});
 
 // Ruta para conseguir todos los carros
 router.get('/carros', (req, res) => {

@@ -13,38 +13,22 @@
             border-radius: 50%;
             margin-right: 5px;
         }
-        .status-available {
-            background-color: green;
-        }
-        .status-unavailable {
-            background-color: red;
-        }
-        .status-maintenance {
-            background-color: gray;
-        }
-        .disabled-btn {
-            pointer-events: none;
-            opacity: 0.5;
-        }
-        /* Ensure all images have the same height */
-        .card-img-top {
-            height: 200px; /* Set the desired height */
-            object-fit: cover; /* Scale the image to cover the entire container while maintaining aspect ratio */
-        }
+        .status-available { background-color: green; }
+        .status-unavailable { background-color: red; }
+        .status-maintenance { background-color: gray; }
+        .disabled-btn { pointer-events: none; opacity: 0.5; }
+        .card-img-top { height: 200px; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Janus Drive</a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" id="account-link" href="login.html">
-                            <i class="bi bi-person"></i> Login
-                        </a>
+                        <a class="nav-link" id="account-link" href="login.html"><i class="bi bi-person"></i> Login</a>
                     </li>
                     <li class="nav-item d-none" id="logout-item">
                         <a class="nav-link" href="#" id="logout-link">Salir</a>
@@ -54,13 +38,9 @@
         </div>
     </nav>
 
-    <!-- Car List -->
     <div class="container mt-5">
         <h1 class="text-center mb-4">Carros Disponibles</h1>
-
-        <div class="row" id="car-list">
-            <!-- Las cajas de carros se generarán aquí dinamicamente -->
-        </div>
+        <div class="row" id="car-list"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -68,9 +48,20 @@
 
     <script>
         $(document).ready(function() {
-            // Verificar si hay un usuario logueado
-            const userId = localStorage.getItem('userId');
+            // Attempt to replay changes to the primary database each time the document loads
+            $.ajax({
+                url: '/replay-changes',
+                method: 'POST',
+                success: function(response) {
+                    console.log('Changes have been synced with the primary database.');
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error syncing changes: ' + xhr.responseText);
+                }
+            });
 
+            // Check if a user is logged in
+            const userId = localStorage.getItem('userId');
             if (userId) {
                 $('#account-link').text('Cuenta').attr('href', 'user_account.html');
                 $('#logout-item').removeClass('d-none');
@@ -81,12 +72,13 @@
                 window.location.href = 'index.html';
             });
 
+            // Fetch available cars
             $.ajax({
-                url: '/carros', // ruta para obtener la lista de carros disponibles
+                url: '/carros',
                 method: 'GET',
                 success: function(data) {
                     const carList = $('#car-list');
-                    carList.empty(); // borrar el contenido actual de la lista
+                    carList.empty(); // Clear the existing content
                     data.forEach(car => {
                         let statusClass = '';
                         let statusText = '';
