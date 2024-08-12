@@ -73,13 +73,16 @@ CREATE TABLE ServicioCliente (
 
 -- Insertar datos de ejemplo en la tabla Carros
 INSERT INTO Carros (Marca, Modelo, Placa, id_disponibilidad, ImagenURL, DetalleEstado) VALUES
-('Toyota', 'Corolla', 'ABC123', 1, 'https://via.placeholder.com/150', 'En buen estado general.'),
-('Honda', 'Civic', 'DEF456', 1, 'https://via.placeholder.com/150', 'Cambio de aceite reciente.'),
-('Ford', 'Mustang', 'GHI789', 3, 'https://via.placeholder.com/150', 'Neumáticos nuevos.'),
-('Chevrolet', 'Cruze', 'JKL012', 1, 'https://via.placeholder.com/150', 'Sin daños.'),
-('Hyundai', 'Elantra', 'MNO345', 2, 'https://via.placeholder.com/150', 'Revisión técnica pasada.'),
-('Mazda', '3', 'PQR678', 1, 'https://via.placeholder.com/150', 'Interior en excelentes condiciones.'),
-('Nissan', 'Altima', 'STU901', 2, 'https://via.placeholder.com/150', 'Cambio de frenos reciente.'),
-('Volkswagen', 'Golf', 'VWX234', 3, 'https://via.placeholder.com/150', 'Sin accidentes.'),
-('Kia', 'Optima', 'YZA567', 1, 'https://via.placeholder.com/150', 'Aire acondicionado funcionando.'),
-('Subaru', 'Impreza', 'BCD890', 1, 'https://via.placeholder.com/150', 'Revisión de motor reciente.');
+('Toyota', 'Corolla', 'ABC123', 1, 'https://s2.ppllstatics.com/lasprovincias/www/multimedia/202102/15/media/cortadas/Imagen%20IMG_7831-kNKG-U130542648007ey-1248x770@Las%20Provincias.jpg', 'En buen estado general.'),
+('Honda', 'Civic', 'DEF456', 1, 'https://car-images.bauersecure.com/wp-images/2301/honda-civic-93.jpg', 'Cambio de aceite reciente.'),
+('Ford', 'Mustang', 'GHI789', 3, 'https://upload.wikimedia.org/wikipedia/commons/d/d1/2018_Ford_Mustang_GT_5.0.jpg', 'Neumáticos nuevos.'),
+('Chevrolet', 'Cruze', 'JKL012', 1, 'https://upload.wikimedia.org/wikipedia/commons/b/b4/2017_Chevrolet_Cruze_LT_in_Arctic_Blue_Metallic%2C_Front_Left.jpg', 'Sin daños.'),
+('Hyundai', 'Elantra', 'MNO345', 2, 'https://us.as.com/autos/wp-content/uploads/2024/03/Large-56914-2024Elantra-1264x734.jpg', 'Revisión técnica pasada.'),
+('Mazda', '3', 'PQR678', 1, 'https://upload.wikimedia.org/wikipedia/commons/8/88/2019_Mazda3_SE-L_2.0_Front.jpg', 'Interior en excelentes condiciones.'),
+('Nissan', 'Altima', 'STU901', 2, 'https://www.usnews.com/object/image/0000018e-669d-d628-a7de-e7dd41b00001/1-2024-nissan-altima-angular-front-ns.JPG?update-time=1711118750856&size=responsive640', 'Cambio de frenos reciente.'),
+('Volkswagen', 'Golf', 'VWX234', 3, 'https://media.ed.edmunds-media.com/volkswagen/golf-gti/2024/oem/2024_volkswagen_golf-gti_4dr-hatchback_380-autobahn_fq_oem_1_1600.jpg', 'Sin accidentes.'),
+('Kia', 'Optima', 'YZA567', 1, 'https://cdn.jdpower.com/ArticleImages/2019%20Kia%20Optima%2013750_720.jpg', 'Aire acondicionado funcionando.'),
+('Subaru', 'Impreza', 'BCD890', 1, 'https://www.usnews.com/object/image/0000018c-5f10-dc6c-aded-ffbc8dd50000/https-cars-dms-usnews-com-static-uploads-images-auto-custom-15240-original-2024-subaru-impreza-angular-front-1.jpg?update-time=1682359512000&size=responsiveGallery', 'Revisión de motor reciente.');
+
+-- Insertar Administrador
+INSERT INTO Usuarios (Username, Password, Email) VALUES('admin', 'admin', 'admin@admin.com');

@@ -6,7 +6,7 @@ const path = require('path');
 
 // Coneccion a la db principal
 const dbPrimary = mysql.createPool({
-    host: 'localhost',
+    host: 'mysql-main',
     user: 'root',
     password: '123456789',
     database: 'AltaDisponibilidadDB_Main',
@@ -15,7 +15,7 @@ const dbPrimary = mysql.createPool({
 
 // Coneccion a la db secundaria
 const dbSecondary = mysql.createPool({
-    host: 'localhost',
+    host: 'mysql-respaldo',
     user: 'root',
     password: '123456789',
     database: 'AltaDisponibilidadDB_Respaldo',

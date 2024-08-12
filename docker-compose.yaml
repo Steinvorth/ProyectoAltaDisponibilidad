@@ -1,0 +1,24 @@
+services:
+  mysql-main:
+    image: mysql:latest
+    container_name: janus-mysql-main
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456789
+    ports:
+      - "3306:3306"
+
+  mysql-respaldo:
+    image: mysql:latest
+    container_name: janus-mysql-respaldo
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456789
+    ports:
+      - "3307:3306"
+  janus-drive:
+    build: .
+    container_name: janus-drive-webapp
+    ports:
+      - "3008:3008"
+    depends_on:
+      - mysql-main
+      - mysql-respaldo
