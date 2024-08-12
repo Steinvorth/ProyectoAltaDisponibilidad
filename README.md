@@ -36,6 +36,7 @@ El proyecto está compuesto por los siguientes elementos:
 
 - **Administración de Usuarios y Carros:** La aplicación permite la gestión de usuarios y vehículos a través de una interfaz sencilla.
 - **Simulación de Alta Disponibilidad:** Se simula un entorno de alta disponibilidad mediante la duplicación de bases de datos MySQL en contenedores separados.
+- **Usuario Administrador:** El usuario admin esta creado por default, tiene el ID=1 y ese sera siempre el ID del admin. Se pueden crear mas usuarios, y moficiarlos por medio de la plataforma. Credenciales de administrador: admin:admin
 
 ## Consideraciones Finales
 
