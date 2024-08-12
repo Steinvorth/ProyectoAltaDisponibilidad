@@ -11,6 +11,10 @@ El proyecto está compuesto por los siguientes elementos:
 - **Servidor Node.js:** La aplicación principal que se ejecuta en un contenedor Docker.
 - **Bases de Datos MySQL:** Dos contenedores de MySQL que simulan un entorno de alta disponibilidad.
 
+Para verificar que el ejemplo de alta disponibilidad está funcionando correctamente, puedes deshabilitar el contenedor principal de MySQL. Es importante entender que este es un ejemplo sencillo y su propósito es demostrar los conceptos básicos de alta disponibilidad. El funcionamiento exitoso se observa al deshabilitar el contenedor principal de MySQL ``` janus-mysql-main ```, donde el segundo contenedor (la base de datos de respaldo) toma el control para asegurar que la caída del contenedor principal no impacte al usuario final.
+
+Cuando el contenedor principal se apaga, un archivo JSON almacena temporalmente todas las consultas realizadas. La base de datos de respaldo mantiene la funcionalidad del sistema. Finalmente, cuando el contenedor principal vuelve a estar en línea, al regresar al archivo index.html (el archivo principal que muestra todos los carros), se restablece la conexión con la base de datos principal y se sincronizan los datos, asegurando la continuidad del servicio sin pérdida de información.
+
 ## Instrucciones de Uso
 
 ### Requisitos
