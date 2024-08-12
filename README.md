@@ -21,7 +21,7 @@ El proyecto está compuesto por los siguientes elementos:
 
 1. Clonar este repositorio:
    ```bash
-   git clone https://github.com/tu_usuario/ProyectoAltaDisponibilidad.git
+   git clone https://github.com/Steinvorth/ProyectoAltaDisponibilidad
    cd ProyectoAltaDisponibilidad
    ```
 
