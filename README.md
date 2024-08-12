@@ -1,6 +1,3 @@
-Aquí tienes un ejemplo para tu archivo `README.md` en español:
-
-```markdown
 # Proyecto Alta Disponibilidad
 
 Este es un proyecto desarrollado como parte del curso **Alta Disponibilidad**. El propósito de este proyecto es ilustrar conceptos relacionados con la alta disponibilidad utilizando tecnologías como Docker, MySQL y Node.js.
@@ -44,6 +41,3 @@ El proyecto está compuesto por los siguientes elementos:
 
 Este proyecto es una simulación y se ha desarrollado únicamente con fines educativos. No se recomienda su uso en un entorno de producción sin las modificaciones y optimizaciones necesarias.
 
-```
-
-Este archivo README debería proporcionar a los usuarios toda la información necesaria para entender y utilizar el proyecto.
