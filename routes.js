@@ -19,90 +19,126 @@ const dbSecondary = mysql.createPool({
     user: 'root',
     password: '123456789',
     database: 'AltaDisponibilidadDB_Respaldo',
-    port: 3307
+    port: 3306
 });
 
 // Este JSON servira para poder subir los datos de la DB secundaria a la principal cuando vuelva a estar en linea
 const logFilePath = path.join(__dirname, 'HA', 'db_changes.json');
 
-// Funcion para agregar un registro al archivo de json con los datos de cada query mientras la db principal esta caida
+// Función para agregar un registro al archivo JSON con los datos de cada query mientras la base de datos principal está caída
 function logQuery(query, params) {
+    // Crea un objeto que contiene la consulta (query) y sus parámetros (params)
     const logEntry = { query, params };
+    
+    // Lee el contenido del archivo JSON donde se guardan los logs
     fs.readFile(logFilePath, (err, data) => {
+        // Inicializa un array vacío para almacenar los logs
         let logs = [];
+        
+        // Si no hay error al leer el archivo y este no está vacío, parsea los datos del archivo JSON y guárdalos en el array logs
         if (!err && data.length > 0) {
             logs = JSON.parse(data);
         }
+        
+        // Agrega el nuevo registro (logEntry) al array de logs
         logs.push(logEntry);
+        
+        // Escribe el array actualizado de logs en el archivo JSON, sobrescribiendo su contenido (por que esta vacio)
         fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), (err) => {
+            // Si ocurre un error al guardar el archivo, se muestra en la consola
             if (err) console.error('Error al guardar el query:', err);
         });
     });
 }
 
-// Funcion para ingresar los datos del json a la base de datos principal
+
+// Función para ingresar los datos almacenados en el archivo JSON a la base de datos principal
 function replayChanges() {
+    // Lee el contenido del archivo JSON que contiene los logs de las consultas fallidas
     fs.readFile(logFilePath, (err, data) => {
+        // Si ocurre un error al leer el archivo o el archivo está vacío, la función termina sin hacer nada
         if (err || data.length === 0) return;
 
+        // Si la lectura fue exitosa, parsea los datos del archivo JSON y los guarda en la variable logs
         const logs = JSON.parse(data);
+        
+        // Recorre cada log en el array logs
         logs.forEach((log) => {
+            // Intenta ejecutar la consulta en la base de datos principal
             dbPrimary.query(log.query, log.params, (err) => {
+                // Si ocurre un error al intentar ejecutar la consulta, se muestra en la consola
                 if (err) {
                     console.error('Could not apply changes from JSON to the primary DB:', err);
+                    return;
                 } else {
+                    // Si la consulta se ejecuta exitosamente, se muestra un mensaje en la consola
                     console.log('Changes successfully applied to the primary database');
+
+                    // Limpia el contenido del archivo JSON una vez que todos los cambios han sido aplicados
+                    fs.writeFile(logFilePath, '[]', (err) => {
+                        // Si ocurre un error al limpiar el archivo JSON, se muestra en la consola
+                        if (err) console.error('Error clearing the JSON file:', err);
+                    });
                 }
             });
-        });
-
-        // Clear the JSON file once changes are applied
-        fs.writeFile(logFilePath, '[]', (err) => {
-            if (err) console.error('Error clearing the JSON file:', err);
         });
     });
 }
 
-// Funcion par ejecutar query en la base de datos principal y guardar los cambios si falla
+// Función para ejecutar una consulta en la base de datos principal y, si falla, intentar en la base de datos secundaria
 function executeQuery(query, params, callback) {
+    // Ejecuta la consulta en la base de datos principal
     dbPrimary.query(query, params, (err, results) => {
+        // Si ocurre un error en la base de datos principal, se registra en la consola
         if (err) {
             console.error('Error en la DB Principal!');
             console.log('Usando la segunda DB...');
 
-            //probar db secundaria
+            // Intenta ejecutar la misma consulta en la base de datos secundaria
             dbSecondary.query(query, params, (err, results) => {
+                // Si también ocurre un error en la base de datos secundaria, se registra en la consola y se llama al callback con el error
                 if (err) {
                     console.error('Error con DB Secundaria:', err.message);
                     return callback(err, null);
                 } else {
+                    // Si la consulta en la base de datos secundaria es exitosa, se llama al callback con los resultados
                     return callback(null, results);
                 }
             });
         } else {
+            // Si la consulta en la base de datos principal es exitosa, se llama al callback con los resultados
             return callback(null, results);
         }
     });
 }
 
-// Funcion para ejecutar INSERT, UPDATE y DELETE queries en ambas bases de datos
+// Función para ejecutar consultas INSERT, UPDATE y DELETE en ambas bases de datos
 function executeDualWrite(query, params, callback) {
+    // Ejecuta la consulta en la base de datos principal
     dbPrimary.query(query, params, (err, results) => {
+        // Si ocurre un error en la base de datos principal, se maneja aquí
         if (err) {
             console.error('Error en DB principal:');
-            logQuery(query, params);  // agregar el query en el JSON si esta caida la DB principal
+            logQuery(query, params);  // Agrega la consulta al archivo JSON si la base de datos principal está caída
+
+            // Intenta ejecutar la misma consulta en la base de datos secundaria
             dbSecondary.query(query, params, (err, results) => {
+                // Si ocurre un error en la base de datos secundaria, se pasa el error al callback
                 if (err) {
                     return callback(err, null);
                 }
+                // Si la consulta en la base de datos secundaria es exitosa, se pasa el resultado al callback
                 return callback(null, results);
             });
         } else {
+            // Si la consulta en la base de datos principal es exitosa, se replica en la base de datos secundaria
             dbSecondary.query(query, params, (err) => {
+                // Si ocurre un error al replicar en la base de datos secundaria, se registra en la consola
                 if (err) {
                     console.error('Error replicando datos en la DB Secundaria:', err.message);
                 }
             });
+            // Se pasa el resultado de la consulta exitosa al callback
             return callback(null, results);
         }
     });
