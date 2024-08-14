@@ -85,7 +85,7 @@ function replayChanges() {
     });
 }
 
-// Función para ejecutar una consulta en la base de datos principal y, si falla, intentar en la base de datos secundaria
+// Función para ejecutar una consulta en la base de datos principal y, si falla, intentar en la base de datos secundaria (Se usa para los SELECT)
 function executeQuery(query, params, callback) {
     // Ejecuta la consulta en la base de datos principal
     dbPrimary.query(query, params, (err, results) => {

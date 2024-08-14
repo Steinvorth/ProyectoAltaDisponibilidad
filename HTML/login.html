@@ -57,60 +57,65 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+
+        // Función para mostrar una alerta en la página
         function showAlert(message, type) {
             const alertBox = $('#alert-box');
+            // Remover clases previas y añadir nuevas basadas en el tipo de alerta (éxito o error)
             alertBox.removeClass('d-none alert-success alert-danger').addClass(`alert-${type}`).text(message);
         }
-
-        // login
+    
+        // Manejar el evento de envío del formulario de login
         $('#login-form').submit(function(event) {
-            event.preventDefault();
-            const username = $('#login-username').val();
-            const password = $('#login-password').val();
-
+            event.preventDefault();  
+            const username = $('#login-username').val(); 
+            const password = $('#login-password').val(); 
+    
+            // Realizar la solicitud AJAX para el login
             $.ajax({
-                url: '/login',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ Username: username, Password: password }),
+                url: '/login',  
+                method: 'POST',  
+                contentType: 'application/json',  // Tipo de contenido de la solicitud
+                data: JSON.stringify({ Username: username, Password: password }),  // Convertir los datos a JSON y enviarlos a la db
                 success: function(response) {
-                    console.log(response.userId); // Debugging: Revisar si se el userId está siendo guardado correctamente en localStorage
+                    console.log(response.userId);  // Debugging: Revisar si el userId se guarda correctamente en localStorage
                     if (response.userId) {
-                        showAlert('Login successful!', 'success');
-                        localStorage.setItem('userId', response.userId);
-                        window.location.href = 'user_account.html';
+                        showAlert('Login Exitoso!', 'success'); 
+                        localStorage.setItem('userId', response.userId); 
+                        window.location.href = 'user_account.html';  // Redirigir al usuario a la página de su cuenta
                     } else {
-                        showAlert('Login failed: User ID not found', 'danger');
+                        showAlert('Login fallido: Usuario no encontrado', 'danger'); 
                     }
                 },
                 error: function(xhr, status, error) {
-                    showAlert('Login failed: ' + xhr.responseText, 'danger');
+                    showAlert('Login fallido: ' + xhr.responseText, 'danger');  // Mostrar mensaje de error si la solicitud falla
                 }
             });
         });
-
-
-        // signup
+    
+        // Manejar el evento de envío del formulario de registro (signup)
         $('#signup-form').submit(function(event) {
-            event.preventDefault();
-            const username = $('#signup-username').val();
-            const email = $('#signup-email').val();
-            const password = $('#signup-password').val();
-
+            event.preventDefault();  
+            const username = $('#signup-username').val();  
+            const email = $('#signup-email').val();  
+            const password = $('#signup-password').val(); 
+    
+            // Realizar la solicitud AJAX para crear una nueva cuenta
             $.ajax({
-                url: '/usuarios',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ Username: username, Email: email, Password: password }),
+                url: '/usuarios',  
+                method: 'POST', 
+                contentType: 'application/json',  // Tipo de contenido de la solicitud
+                data: JSON.stringify({ Username: username, Email: email, Password: password }),  // Convertir los datos a JSON y enviarlos
                 success: function(response) {
-                    showAlert('Account created successfully!', 'success');
+                    showAlert('Cuenta creada con exito!', 'success');  // Mostrar mensaje de éxito si se crea la cuenta
                 },
                 error: function(xhr, status, error) {
-                    showAlert('Account creation failed: ' + xhr.responseText, 'danger');
+                    showAlert('Error al crear la cuenta: ' + xhr.responseText, 'danger');  // Mostrar mensaje de error si la creación de la cuenta falla
                 }
             });
         });
     </script>
+    
 
 </body>
 </html>
