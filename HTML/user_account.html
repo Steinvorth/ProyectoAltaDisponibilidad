@@ -252,73 +252,78 @@
         $(document).ready(function() {
             const userId = localStorage.getItem('userId');
             console.log(userId);
-            let currentTable = 'rentals'; // la "ventana" default que se ve
-
+            let currentTable = 'rentals'; // Tabla por defecto que se muestra al cargar la página
+    
+            // Verificar si el usuario está logueado
             if (!userId) {
-                showAlert('Debe iniciar sesion.', 'danger');
-                window.location.href = 'login.html';
+                showAlert('Debe iniciar sesión.', 'danger');  // Mostrar alerta si no está logueado
+                window.location.href = 'login.html';  // Redirigir al usuario a la página de login
                 return;
             }
-
+    
+            // Manejar el clic en el enlace de logout
             $('#logout-link').click(function() {
-                localStorage.removeItem('userId');
-                window.location.href = 'index.html';
+                localStorage.removeItem('userId');  // Eliminar el ID de usuario del localStorage
+                window.location.href = 'index.html';  // Redirigir a la página principal
             });
-
+    
+            // Verificar si el usuario es administrador (ID = 1)
             if (userId == 1) {
-                // Admin
+                // Mostrar elementos específicos del panel de administración
                 $('#account-title').text('Admin Panel');
                 $('#admin-nav').removeClass('d-none');
                 $('#rentals-title').text('Rentas de Usuario');
                 $('#user-column').show();
                 $('#actions-column').show();
-
-                // Admin navigation handlers
+    
+                // Manejar la navegación dentro del panel de administración
                 $('#manage-users').click(function() {
                     $('#users-section').show();
                     $('#cars-section').hide();
                     $('#rentals-section').hide();
-                    fetchAdminData('users');
+                    fetchAdminData('users');  // Cargar datos de usuarios
                 });
-
+    
                 $('#manage-cars').click(function() {
                     $('#users-section').hide();
                     $('#cars-section').show();
                     $('#rentals-section').hide();
-                    fetchAdminData('cars');
+                    fetchAdminData('cars');  // Cargar datos de autos
                 });
-
+    
                 $('#manage-rentals').click(function() {
                     $('#users-section').hide();
                     $('#cars-section').hide();
                     $('#rentals-section').show();
-                    fetchAdminData('rentals');
+                    fetchAdminData('rentals');  // Cargar datos de rentas
                 });
-
-                fetchAdminData(currentTable); // Buscar las rentas por defecto
-
+    
+                fetchAdminData(currentTable); // Cargar la tabla por defecto (rentas)
+    
+                // Función para obtener datos de la tabla correspondiente
                 function fetchAdminData(table) {
                     let url = '';
                     if (table === 'users') {
-                        url = '/admin/users';
+                        url = '/admin/users';  // Ruta para obtener datos de usuarios
                     } else if (table === 'cars') {
-                        url = '/admin/cars';
+                        url = '/admin/cars';  // Ruta para obtener datos de autos
                     } else {
-                        url = '/admin/rentals';
+                        url = '/admin/rentals';  // Ruta para obtener datos de rentas
                     }
-
+    
                     $.ajax({
                         url: url,
                         method: 'GET',
                         success: function(data) {
-                            populateTable(data, table);
+                            populateTable(data, table);  // Poblar la tabla con los datos obtenidos
                         },
                         error: function(xhr, status, error) {
-                            showAlert(`Error ${table} data: ${xhr.responseText}`, 'danger');
+                            showAlert(`Error al obtener datos de ${table}: ${xhr.responseText}`, 'danger');  // Mostrar alerta en caso de error
                         }
                     });
                 }
-
+    
+                // Función para poblar la tabla con los datos obtenidos
                 function populateTable(data, table) {
                     let list = $('#rental-list');
                     if (table === 'users') {
@@ -326,10 +331,10 @@
                     } else if (table === 'cars') {
                         list = $('#car-list');
                     }
-                    list.empty();
-
+                    list.empty();  // Vaciar la tabla antes de poblarla
+    
                     if (data.length === 0) {
-                        list.append('<tr><td colspan="5" class="text-center">No se encontraron datos.</td></tr>');
+                        list.append('<tr><td colspan="5" class="text-center">No se encontraron datos.</td></tr>');  // Mostrar mensaje si no hay datos
                     } else {
                         data.forEach((entry, index) => {
                             let row = '';
@@ -373,32 +378,32 @@
                                         <td>${entry.FinalRenta ? new Date(entry.FinalRenta).toLocaleDateString() : 'Ongoing'}</td>
                                         <td>${parseFloat(entry.CostoTotal).toFixed(2)} USD</td>
                                         <td>
-                                            <button class="btn btn-warning btn-sm edit-entry" data-id="${entry.ID}" data-table="rentals">Esitar</button>
+                                            <button class="btn btn-warning btn-sm edit-entry" data-id="${entry.ID}" data-table="rentals">Editar</button>
                                             <button class="btn btn-danger btn-sm delete-entry" data-id="${entry.ID}" data-table="rentals">Borrar</button>
                                         </td>
                                     </tr>
                                 `;
                             }
-                            list.append(row);
+                            list.append(row);  // Agregar la fila a la tabla
                         });
                     }
-
-                    // Event Listeners para los botones
+    
+                    // Agregar eventos a los botones de editar y borrar
                     $('.edit-entry').click(function() {
                         const id = $(this).data('id');
                         const table = $(this).data('table');
-                        openEditModal(id, table);
+                        openEditModal(id, table);  // Abrir el modal de edición
                     });
-
+    
                     $('.delete-entry').click(function() {
                         const id = $(this).data('id');
                         const table = $(this).data('table');
-                        openDeleteModal(id, table);
+                        openDeleteModal(id, table);  // Abrir el modal de eliminación
                     });
                 }
-
+    
+                // Función para abrir el modal de edición con los datos correspondientes
                 function openEditModal(id, table) {
-                    // Buscar los datos ylos mostrar en el modal de editar
                     let url = '';
                     if (table === 'users') {
                         url = `/usuarios/${id}`;
@@ -407,7 +412,7 @@
                     } else {
                         url = `/rentals/${id}`;
                     }
-
+    
                     $.ajax({
                         url: url,
                         method: 'GET',
@@ -426,7 +431,7 @@
                                     <div class="mb-3">
                                         <label for="editState" class="form-label">Estado</label>
                                         <select class="form-control" id="editState" required>
-                                            <!-- las Opciones Seran Populadas Automaticamente desde la base de datos -->
+                                            <!-- Opciones serán populadas automáticamente desde la base de datos -->
                                         </select>
                                     </div>
                                     <div class="mb-3">
@@ -438,10 +443,10 @@
                                         <input type="text" class="form-control" id="editImageURL" value="${data.ImagenURL || ''}">
                                     </div>
                                 `);
-
-                                // Popular el dropdown deldropdown de estados
+    
+                                // Popular el dropdown de estados
                                 populateStateDropdown('#editState', data.id_disponibilidad);
-
+    
                             } else if (table === 'users') {
                                 $('#additionalFields').html(`
                                     <div class="mb-3">
@@ -461,24 +466,24 @@
                                     </div>
                                 `);
                             }
-
-                            // sumbittear el form
+    
+                            // Manejar el formulario de edición
                             $('#editForm').off('submit').on('submit', function(event) {
                                 event.preventDefault();
-                                saveChanges(id, table);
+                                saveChanges(id, table);  // Guardar los cambios
                             });
                         },
                         error: function(xhr, status, error) {
-                            showAlert(`Error al encontrar datos: ${xhr.responseText}`, 'danger');
+                            showAlert(`Error al encontrar datos: ${xhr.responseText}`, 'danger');  // Mostrar alerta en caso de error
                         }
                     });
                 }
-
-
+    
+                // Función para guardar los cambios en la base de datos
                 function saveChanges(id, table) {
                     let url = '';
                     let data = {};
-
+    
                     if (table === 'users') {
                         url = `/usuarios/${id}`;
                         data = {
@@ -505,31 +510,32 @@
                             CostoTotal: $('#editCost').val(),
                         };
                     }
-
+    
                     $.ajax({
                         url: url,
                         method: 'PUT',
                         contentType: 'application/json',
                         data: JSON.stringify(data),
                         success: function(response) {
-                            $('#editModal').modal('hide');
-                            showAlert('Se actualizo Exitosamente!', 'success');
-                            fetchAdminData(table);
+                            $('#editModal').modal('hide');  // Cerrar el modal de edición
+                            showAlert('Se actualizó exitosamente!', 'success');  // Mostrar mensaje de éxito
+                            fetchAdminData(table);  // Volver a cargar los datos
                         },
                         error: function(xhr, status, error) {
-                            showAlert(`No se pudo guardar: ${xhr.responseText}`, 'danger');
+                            showAlert(`No se pudo guardar: ${xhr.responseText}`, 'danger');  // Mostrar alerta en caso de error
                         }
                     });
                 }
-
-
+    
+                // Función para abrir el modal de eliminación
                 function openDeleteModal(id, table) {
-                    $('#deleteModal').modal('show');
+                    $('#deleteModal').modal('show');  // Mostrar el modal de confirmación de eliminación
                     $('#confirmDelete').off('click').on('click', function() {
-                        deleteEntry(id, table);
+                        deleteEntry(id, table);  // Llamar a la función de eliminación al confirmar
                     });
                 }
-
+    
+                // Función para eliminar una entrada en la base de datos
                 function deleteEntry(id, table) {
                     let url = '';
                     if (table === 'users') {
@@ -539,39 +545,40 @@
                     } else {
                         url = `/rentals/${id}`;
                     }
-
+    
                     $.ajax({
                         url: url,
                         method: 'DELETE',
                         success: function(response) {
-                            $('#deleteModal').modal('hide');
-                            showAlert('Se elimino Exitosamente', 'success');
-                            fetchAdminData(table);
+                            $('#deleteModal').modal('hide');  // Cerrar el modal de confirmación
+                            showAlert('Se eliminó exitosamente', 'success');  // Mostrar mensaje de éxito
+                            fetchAdminData(table);  // Volver a cargar los datos
                         },
                         error: function(xhr, status, error) {
-                            showAlert(`No se pudo eliminar correctamente: ${xhr.responseText}`, 'danger');
+                            showAlert(`No se pudo eliminar correctamente: ${xhr.responseText}`, 'danger');  // Mostrar alerta en caso de error
                         }
                     });
                 }
-
+    
             } else {
-                // FTraer datos para el usuario normal
+                // Cargar datos para un usuario normal
                 $('#rentals-section').show();
                 $('#user-column').hide();
                 $('#actions-column').hide();
-                fetchRentalsForUser(userId);
+                fetchRentalsForUser(userId);  // Obtener las rentas del usuario
             }
-
+    
+            // Función para obtener las rentas de un usuario específico
             function fetchRentalsForUser(userId) {
                 $.ajax({
                     url: `/rentals/${userId}`,
                     method: 'GET',
                     success: function(data) {
                         const rentalList = $('#rental-list');
-                        rentalList.empty();
-
+                        rentalList.empty();  // Vaciar la tabla antes de poblarla
+    
                         if (data.length === 0) {
-                            rentalList.append('<tr><td colspan="5" class="text-center">No hay datos disponibles.</td></tr>');
+                            rentalList.append('<tr><td colspan="5" class="text-center">No hay datos disponibles.</td></tr>');  // Mostrar mensaje si no hay datos
                         } else {
                             data.forEach((rental, index) => {
                                 rentalList.append(`
@@ -582,20 +589,20 @@
                                         <td>${rental.FinalRenta ? new Date(rental.FinalRenta).toLocaleDateString() : 'Ongoing'}</td>
                                         <td>${parseFloat(rental.CostoTotal).toFixed(2)} USD</td>
                                     </tr>
-                                `);
+                                `);  // Poblar la tabla con las rentas del usuario
                             });
                         }
                     },
                     error: function(xhr, status, error) {
-                        showAlert('Error al conseguir datos: ' + xhr.responseText, 'danger');
+                        showAlert('Error al conseguir datos: ' + xhr.responseText, 'danger');  // Mostrar alerta en caso de error
                     }
                 });
             }
-
-            // Submitteo del formse para agregar un nuevo usuario
+    
+            // Enviar el formulario para agregar un nuevo usuario
             $('#addUserForm').submit(function(event) {
                 event.preventDefault();
-
+    
                 const newUser = {
                     Username: $('#newUsername').val(),
                     Password: $('#newPassword').val(),
@@ -603,27 +610,27 @@
                     Nombre: $('#newFirstName').val(),
                     Apellido: $('#newLastName').val(),
                 };
-
+    
                 $.ajax({
                     url: '/admin/users',
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(newUser),
                     success: function(response) {
-                        $('#addUserModal').modal('hide');
-                        showAlert('Ususario agregado Exitosamente!', 'success');
-                        fetchAdminData('users');
+                        $('#addUserModal').modal('hide');  // Cerrar el modal de agregar usuario
+                        showAlert('Usuario agregado exitosamente!', 'success');  // Mostrar mensaje de éxito
+                        fetchAdminData('users');  // Volver a cargar los datos de usuarios
                     },
                     error: function(xhr, status, error) {
-                        showAlert('Failed to add user: ' + xhr.responseText, 'danger');
+                        showAlert('No se pudo agregar usuario: ' + xhr.responseText, 'danger');  // Mostrar alerta en caso de error
                     }
                 });
             });
-
-            // Submitteo del forms para un carro nuevo
+    
+            // Enviar el formulario para agregar un nuevo carro
             $('#addCarForm').submit(function(event) {
                 event.preventDefault();
-
+    
                 const newCar = {
                     Marca: $('#newBrand').val(),
                     Modelo: $('#newModel').val(),
@@ -632,23 +639,24 @@
                     ImagenURL: $('#newImageUrl').val(),
                     DetalleEstado: $('#newDetails').val(),
                 };
-
+    
                 $.ajax({
                     url: '/admin/cars',
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(newCar),
                     success: function(response) {
-                        $('#addCarModal').modal('hide');
-                        showAlert('Carro agregado Exitosamente!', 'success');
-                        fetchAdminData('cars');
+                        $('#addCarModal').modal('hide');  // Cerrar el modal de agregar carro
+                        showAlert('Carro agregado exitosamente!', 'success');  // Mostrar mensaje de éxito
+                        fetchAdminData('cars');  // Volver a cargar los datos de autos
                     },
                     error: function(xhr, status, error) {
-                        showAlert('Error al agregar el carro: ' + xhr.responseText, 'danger');
+                        showAlert('Error al agregar el carro: ' + xhr.responseText, 'danger');  // Mostrar alerta en caso de error
                     }
                 });
             });
-
+    
+            // Popular el dropdown de estado de los carros
             function populateStateDropdown(selector, selectedId = null) {
                 $.ajax({
                     url: '/availability', 
@@ -659,33 +667,32 @@
                         data.forEach(status => {
                             const isSelected = status.LogID == selectedId ? 'selected' : '';
                             dropdown.append(`<option value="${status.LogID}" ${isSelected}>${status.Estado}</option>`);
-                        });
+                        });  // Poblar el dropdown con los estados disponibles
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error al conseguir estado del vehiculo:', xhr.responseText);
+                        console.error('Error al conseguir estado del vehiculo:', xhr.responseText);  // Mostrar error en la consola
                     }
                 });
             }
-
-            // Popular el dropdown de estado al mostrar el modal para agregar un carro nuevo.
+    
+            // Popular el dropdown de estado al mostrar el modal para agregar un carro nuevo
             $('#addCarModal').on('show.bs.modal', function() {
-                populateStateDropdown('#newState');
+                populateStateDropdown('#newState');  // Popular el dropdown con los estados
             });
-
-
-            // Funcion para las alertas de bootstrap
+    
+            // Función para mostrar alertas de Bootstrap
             function showAlert(message, type) {
                 const alertBox = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
                                     ${message}
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                   </div>`;
-                $('body').prepend(alertBox);
+                $('body').prepend(alertBox);  // Añadir el mensaje de alerta al cuerpo del documento
                 setTimeout(() => {
-                    $('.alert').alert('close');
+                    $('.alert').alert('close');  // Cerrar automáticamente la alerta después de 5 segundos
                 }, 5000);
             }
         });
     </script>
-
+    
 </body>
 </html>

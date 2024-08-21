@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Renting Service</title>
+    <title>Janus Drive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .status-circle {
@@ -48,10 +48,10 @@
 
     <script>
         $(document).ready(function() {
-            // Intentar de replicar datos a la DB primaria cada vez que el documento carga
+            // Intentar sincronizar los datos a la base de datos primaria cada vez que el documento se carga
             $.ajax({
                 url: '/replay-changes',
-                method: 'POST',
+                method: 'POST', 
                 success: function(response) {
                     console.log('Cambios hechos a la base de datos primaria.');
                 },
@@ -59,55 +59,60 @@
                     console.log('Error sincronizando cambios: ' + xhr.responseText);
                 }
             });
-
-            // Verificar si hay un usuario logueado
+    
+            
             const userId = localStorage.getItem('userId');
             if (userId) {
-                $('#account-link').text('Cuenta').attr('href', 'user_account.html');
-                $('#logout-item').removeClass('d-none');
+                $('#account-link').text('Cuenta').attr('href', 'user_account.html');  // Cambiar el texto y el enlace del botón de cuenta
+                $('#logout-item').removeClass('d-none');  // Poner el botón de cierre de sesión
             }
-
+    
+            // Manejar el evento de clic en el enlace de cierre de sesión
             $('#logout-link').click(function() {
                 localStorage.removeItem('userId');
                 window.location.href = 'index.html';
             });
-
-            // Obtener la lista de carros disponibles
+    
+            // Obtener la lista de carros disponibles desde el servidor
             $.ajax({
                 url: '/carros', // Ruta para obtener la lista de carros disponibles
                 method: 'GET',
                 success: function(data) {
-                    const carList = $('#car-list');
-                    carList.empty(); // Borrar el contenido actual de la lista
+                    const carList = $('#car-list');  // Obtener el contenedor de la lista de carros
+                    carList.empty();  // Limpiar el contenido actual de la lista
+    
+                    // Iterar sobre cada carro en los datos recibidos
                     data.forEach(car => {
                         let statusClass = '';
                         let statusText = '';
                         let buttonDisabled = '';
                         let popoverText = '';
-
+    
+                        // CSS, el texto de estado y el estado del botón basado en el estado del carro
                         switch (car.Estado) {
                             case 'Disponible':
                                 statusClass = 'status-available';
                                 statusText = 'Disponible';
-                                buttonDisabled = ''; // El botón está activo
+                                buttonDisabled = '';  // Si esta disponible el boton se puede usar
                                 break;
                             case 'No Disponible':
                                 statusClass = 'status-unavailable';
                                 statusText = 'No Disponible';
-                                buttonDisabled = 'disabled-btn';
+                                buttonDisabled = 'disabled-btn';  // SI no esta disponible, no se podria utilizar.
                                 popoverText = 'El carro no está disponible en este momento.';
                                 break;
                             case 'Mantenimiento':
                                 statusClass = 'status-maintenance';
                                 statusText = 'En Mantenimiento';
-                                buttonDisabled = 'disabled-btn';
+                                buttonDisabled = 'disabled-btn';  // Si esta en mantenimiento, no se podria utilizar.
                                 popoverText = 'El carro no está disponible en este momento.';
                                 break;
                             default:
-                                statusClass = 'status-available'; // Caso por defecto
+                                statusClass = 'status-available';  // default
                                 statusText = 'Disponible';
                         }
-
+    
+                        // Añadir el HTML del carro a la lista
                         carList.append(`
                             <div class="col-md-4">
                                 <div class="card mb-4">
@@ -126,20 +131,20 @@
                                 </div>
                             </div>
                         `);
-
-                        // Inicializar popovers
+    
+                        // popovers en los botones deshabilitados (que no funcionaron)
                         $('[data-bs-toggle="popover"]').popover({
                             trigger: 'hover',
-                            placement: 'top'
+                            placement: 'top'    
                         });
                     });
                 },
                 error: function(error) {
-                    console.error('Error obteniendo datos de los carros:', error);
+                    console.error('Error obteniendo datos de los carros:', error); 
                 }
             });
         });
-    </script>    
+    </script>     
 
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rent Car</title>
+    <title>Renta</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .car-details {
@@ -124,89 +124,97 @@
 
     <script>
         $(document).ready(function() {
+            // Obtener parámetros de la URL, como el ID del auto
             const urlParams = new URLSearchParams(window.location.search);
             const carId = urlParams.get('carId');
-            const userId = localStorage.getItem('userId');
-            const pricePerDay = 30; // precio por dia a 30$
-
+            const userId = localStorage.getItem('userId'); 
+            const pricePerDay = 30; // Precio fijo por día de renta, en este caso $30
+    
+            // Verificar si el usuario está logueado
             if (!userId) {
-                showAlert('danger', 'Debe tener una cuenta para rentar el auto!');
-                return;
+                showAlert('danger', 'Debe tener una cuenta para rentar el auto!');  // Mostrar alerta si no está logueado
+                return;  // Salir de la función si no hay usuario logueado
             }
-
-            // Conseguir los datos del auto
+    
+            // Hacer una solicitud AJAX para obtener los datos del auto según su ID
             $.ajax({
-                url: `/carros/${carId}`,
-                method: 'GET',
+                url: `/carros/${carId}`,  // Endpoint para obtener los detalles del auto
+                method: 'GET',  
                 success: function(car) {
+                    // Si la solicitud es exitosa, mostrar los detalles del auto en la página
                     $('#car-info').html(`
                         <h3>${car.Marca} ${car.Modelo}</h3>
                         <p>${car.DetalleEstado}</p>
                     `);
-                    $('#car-image').attr('src', car.ImagenURL);
+                    $('#car-image').attr('src', car.ImagenURL);  // Mostrar la imagen del auto
                 },
                 error: function(xhr, status, error) {
-                    showAlert('danger', 'Error: ' + xhr.responseText);
+                    showAlert('danger', 'Error: ' + xhr.responseText);  // Mostrar alerta si hay un error en la solicitud
                 }
             });
-
-            // calcular automaticamente los precios de las fechas seleccionadas
+    
+            // Calcular automáticamente el costo total basado en las fechas seleccionadas
             $('#start-date, #end-date').on('change', function() {
-                const startDate = new Date($('#start-date').val());
-                const endDate = new Date($('#end-date').val());
-
+                const startDate = new Date($('#start-date').val());  // Obtener la fecha de inicio
+                const endDate = new Date($('#end-date').val());  // Obtener la fecha de fin
+    
+                // Verificar si las fechas son válidas y calcular el costo total
                 if (startDate && endDate && endDate >= startDate) {
-                    const timeDiff = Math.abs(endDate - startDate);
-                    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // calcular numero de dias
-                    const totalCost = diffDays * pricePerDay; // Calcular el costo total
-                    $('#total-cost').val(totalCost.toFixed(2));
+                    const timeDiff = Math.abs(endDate - startDate);  // Diferencia de tiempo en milisegundos
+                    const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;  // Calcular el número de días, añadiendo 1 para incluir el día de inicio
+                    const totalCost = diffDays * pricePerDay;  // Calcular el costo total
+                    $('#total-cost').val(totalCost.toFixed(2));  // Mostrar el costo total en el campo correspondiente
                 } else {
-                    $('#total-cost').val('');
+                    $('#total-cost').val('');  // Limpiar el campo de costo si las fechas no son válidas
                 }
             });
-
-            // Form de renta
+    
+            // Manejar el envío del formulario de renta
             $('#rental-form').submit(function(event) {
-                event.preventDefault();
-                const startDate = $('#start-date').val();
-                const endDate = $('#end-date').val();
-                const totalCost = $('#total-cost').val();
-
+                event.preventDefault();  
+                const startDate = $('#start-date').val();  // Obtener la fecha de inicio
+                const endDate = $('#end-date').val();  // Obtener la fecha de fin
+                const totalCost = $('#total-cost').val();  // Obtener el costo total
+    
+                // Hacer una solicitud AJAX para crear la renta
                 $.ajax({
-                    url: '/rentals',
-                    method: 'POST',
-                    contentType: 'application/json',
+                    url: '/rentals',  // Endpoint para registrar una nueva renta
+                    method: 'POST',  
+                    contentType: 'application/json',  // Tipo de contenido JSON
                     data: JSON.stringify({
-                        id_usuario: userId,
-                        id_carro: carId,
-                        ComienzoRenta: startDate,
-                        FinalRenta: endDate,
-                        CostoTotal: totalCost
+                        id_usuario: userId,  // ID del usuario 
+                        id_carro: carId,  // ID del auto que se está rentando
+                        ComienzoRenta: startDate,  // Fecha de inicio de la renta
+                        FinalRenta: endDate,  // Fecha de finalización de la renta
+                        CostoTotal: totalCost  // Costo total de la renta
                     }),
                     success: function(response) {
-                        showAlert('success', 'Se ha rentado exitosamente!');
+                        showAlert('success', 'Se ha rentado exitosamente!');  // Mostrar mensaje de éxito
                         setTimeout(() => {
-                            window.location.href = 'user_account.html';
-                        }, 1000); // redireccionar a la pagina de usuario para ver la renta 
+                            window.location.href = 'user_account.html';  // Redirigir a la página de la cuenta de usuario para que pueda ver su renta nueva.
+                        }, 1000);  // Esperar 1 segundo antes de mandarlo
                     },
                     error: function(xhr, status, error) {
-                        showAlert('danger', 'Error: ' + xhr.responseText);
+                        showAlert('danger', 'Error: ' + xhr.responseText);  // Mostrar mensaje de error si la solicitud falla
                     }
                 });
             });
-
+    
+            // Manejar el clic en el enlace de logout
             $('#logout-link').click(function() {
-                localStorage.removeItem('userId');
-                window.location.href = 'index.html';
+                localStorage.removeItem('userId'); 
+                window.location.href = 'index.html';  // Redirigir a la página principal
             });
-
+    
+            // Función para mostrar alertas en la página
             function showAlert(type, message) {
-                const alertDiv = $('#alert-message');
-                alertDiv.removeClass('d-none').addClass(`alert-${type}`);
-                alertDiv.text(message);
+                const alertDiv = $('#alert-message');  // Seleccionar el elemento de alerta
+                alertDiv.removeClass('d-none').addClass(`alert-${type}`);  // Quitar clase 'd-none' y añadir clase según el tipo de alerta
+                alertDiv.text(message);  // Establecer el texto del mensaje de alerta
             }
         });
     </script>
+    
 
 </body>
 </html>
